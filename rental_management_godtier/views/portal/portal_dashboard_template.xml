@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <!-- ============================================================
+       Portal Dashboard — /my/rentals
+       ============================================================ -->
+  <template id="portal_rental_dashboard" name="OmniRent Pro — My Rentals" inherit_id="portal.portal_layout" primary="True">
+    <xpath expr="//div[@id='wrap']" position="replace">
+      <div id="wrap" class="omni-portal o_rental_module">
+        <div class="omni-portal__layout">
+
+          <!-- ── Sidebar ──────────────────────────────────── -->
+          <aside class="omni-portal__sidebar">
+            <!-- User Profile -->
+            <div class="portal-user">
+              <div class="portal-user__avatar" onclick="document.getElementById('portal-avatar-upload').click()">
+                <t t-if="request.env.user.image_128">
+                  <img t-att-src="'data:image/png;base64,' + request.env.user.image_128.decode()"
+                       t-att-alt="request.env.user.name"/>
+                </t>
+                <t t-else="">
+                  <div class="avatar-placeholder">👤</div>
+                </t>
+                <div class="avatar-edit-overlay">📷</div>
+                <input type="file" id="portal-avatar-upload" accept="image/*" style="display:none;" onchange="portalDash.uploadAvatar(this)"/>
+              </div>
+              <div class="portal-user__name"><t t-esc="request.env.user.name"/></div>
+              <div class="portal-user__email"><t t-esc="request.env.user.login"/></div>
+              <span class="portal-user__tier">
+                <span class="tier-star">⭐</span> Pro Member
+              </span>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="portal-nav">
+              <div class="portal-nav__group">
+                <div class="portal-nav__group-title">My Account</div>
+                <a href="/my/rentals" class="portal-nav__item active" id="nav-rentals">
+                  <div class="nav-icon">📦</div>
+                  My Rentals
+                  <span class="nav-badge" id="active-rental-count"><t t-esc="active_count or 0"/></span>
+                </a>
+                <a href="/my/profile" class="portal-nav__item" id="nav-profile">
+                  <div class="nav-icon">👤</div>
+                  Profile
+                </a>
+                <a href="/my/addresses" class="portal-nav__item" id="nav-addresses">
+                  <div class="nav-icon">📍</div>
+                  Addresses
+                </a>
+                <a href="/my/payment" class="portal-nav__item" id="nav-payment">
+                  <div class="nav-icon">💳</div>
+                  Payment Methods
+                </a>
+              </div>
+              <div class="portal-nav__group">
+                <div class="portal-nav__group-title">Quick Links</div>
+                <a href="/rental" class="portal-nav__item">
+                  <div class="nav-icon">🔍</div>
+                  Browse Products
+                </a>
+                <a href="/my/orders" class="portal-nav__item">
+                  <div class="nav-icon">📋</div>
+                  All Orders
+                </a>
+                <a href="/contactus" class="portal-nav__item">
+                  <div class="nav-icon">💬</div>
+                  Support
+                </a>
+              </div>
+            </nav>
+
+            <!-- Sidebar Footer -->
+            <div class="portal-sidebar-footer">
+              <a href="/web/session/logout" class="logout-btn">
+                <span>🚪</span> Sign Out
+              </a>
+            </div>
+          </aside>
+
+          <!-- ── Main Content ───────────────────────────── -->
+          <main class="omni-portal__main">
+
+            <!-- Page Header -->
+            <div class="portal-page-header">
+              <div>
+                <h1>My <span>Rentals</span></h1>
+                <p>Track your active rentals, deposits, and return schedules.</p>
+              </div>
+              <a href="/rental" class="omni-btn omni-btn--primary omni-btn--sm">+ New Rental</a>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="portal-stats">
+              <div class="stat-card">
+                <div class="stat-value"><t t-esc="active_count or 0"/></div>
+                <div class="stat-label">Active Rentals</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value"><t t-esc="past_count or 0"/></div>
+                <div class="stat-label">Past Rentals</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value">₹<t t-esc="'%.0f' % (deposit_held or 0)"/></div>
+                <div class="stat-label">Deposit Held</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value"><t t-esc="overdue_count or 0"/></div>
+                <div class="stat-label">Overdue</div>
+              </div>
+            </div>
+
+            <!-- Filter Tabs -->
+            <div style="display:flex; gap:4px; background:rgba(30,41,59,0.4); border-radius:10px; padding:4px; width:fit-content; margin-bottom:20px;">
+              <button class="tab active" id="tab-all" onclick="portalDash.setTab('all', this)" style="padding:8px 20px; border-radius:8px; border:none; background:rgba(10,15,30,0.8); color:#F1F5F9; cursor:pointer; font-size:0.85rem; font-weight:500;">All</button>
+              <button class="tab" id="tab-active" onclick="portalDash.setTab('active', this)" style="padding:8px 20px; border-radius:8px; border:none; background:transparent; color:#94A3B8; cursor:pointer; font-size:0.85rem; font-weight:500;">Active</button>
+              <button class="tab" id="tab-overdue" onclick="portalDash.setTab('overdue', this)" style="padding:8px 20px; border-radius:8px; border:none; background:transparent; color:#94A3B8; cursor:pointer; font-size:0.85rem; font-weight:500;">Overdue</button>
+              <button class="tab" id="tab-returned" onclick="portalDash.setTab('returned', this)" style="padding:8px 20px; border-radius:8px; border:none; background:transparent; color:#94A3B8; cursor:pointer; font-size:0.85rem; font-weight:500;">Returned</button>
+            </div>
+
+            <!-- Rentals Table -->
+            <div class="rental-table-wrap">
+              <div class="table-header">
+                <h2>Rental Orders</h2>
+                <div class="table-actions">
+                  <button onclick="portalDash.downloadAll()" style="padding:8px 16px; border-radius:8px; border:1px solid rgba(148,163,184,0.12); background:rgba(30,41,59,0.4); color:#94A3B8; cursor:pointer; font-size:0.8rem;">⬇ Export</button>
+                </div>
+              </div>
+
+              <t t-if="orders">
+                <div style="overflow-x:auto;">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Product</th>
+                        <th>Rental Period</th>
+                        <th>Return Due</th>
+                        <th>Status</th>
+                        <th>Deposit</th>
+                        <th>Total</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="rental-table-body">
+                      <t t-foreach="orders" t-as="order">
+                        <tr t-att-data-status="order.state" t-att-data-order-id="order.id">
+                          <!-- Product -->
+                          <td>
+                            <div class="product-cell">
+                              <t t-if="order.order_line">
+                                <img t-att-src="'/web/image/product.product/%s/image_128' % order.order_line[0].product_id.id"
+                                     onerror="this.style.display='none'" alt=""/>
+                                <div>
+                                  <div class="product-name"><t t-esc="order.order_line[0].product_id.name"/></div>
+                                  <div class="product-id">#<t t-esc="order.name"/></div>
+                                </div>
+                              </t>
+                            </div>
+                          </td>
+                          <!-- Rental Period -->
+                          <td>
+                            <div class="period-cell">
+                              <div class="dates">
+                                <div class="start-date">
+                                  <span class="cal-icon">📅</span>
+                                  <t t-esc="order.order_line and order.order_line[0].rental_start_date and order.order_line[0].rental_start_date.strftime('%d %b %Y') or '—'"/>
+                                </div>
+                                <div class="end-date">
+                                  <span class="cal-icon">📅</span>
+                                  <t t-esc="order.order_line and order.order_line[0].rental_return_date and order.order_line[0].rental_return_date.strftime('%d %b %Y') or '—'"/>
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <!-- Return Due -->
+                          <td>
+                            <t t-if="order.order_line and order.order_line[0].rental_return_date">
+                              <div style="font-size:0.875rem; font-weight:500; color:#F1F5F9;">
+                                <t t-esc="order.order_line[0].rental_return_date.strftime('%d %b %Y, %I:%M %p')"/>
+                              </div>
+                              <t t-set="is_overdue" t-value="order.order_line[0].rental_return_date &lt; datetime.datetime.now()"/>
+                              <t t-if="is_overdue">
+                                <span class="due-label" style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); color:#FCA5A5; font-size:0.68rem; padding:2px 8px; border-radius:999px; font-weight:700; display:inline-block; margin-top:4px;">OVERDUE</span>
+                              </t>
+                            </t>
+                          </td>
+                          <!-- Status -->
+                          <td>
+                            <t t-if="order.state == 'sale' and order.rental_status == 'pickup'">
+                              <span class="status-badge status-badge--confirmed">Pickup Due</span>
+                            </t>
+                            <t t-elif="order.state == 'sale' and order.rental_status == 'return'">
+                              <span class="status-badge status-badge--active">Active</span>
+                            </t>
+                            <t t-elif="order.state == 'sale' and order.rental_status == 'returned'">
+                              <span class="status-badge status-badge--returned">Returned</span>
+                            </t>
+                            <t t-elif="order.state == 'cancel'">
+                              <span class="status-badge status-badge--returned">Cancelled</span>
+                            </t>
+                            <t t-else="">
+                              <span class="status-badge status-badge--pending"><t t-esc="order.state.title()"/></span>
+                            </t>
+                          </td>
+                          <!-- Deposit -->
+                          <td>
+                            <t t-if="order.rental_status == 'returned'">
+                              <span class="deposit-badge deposit-badge--refunded">✓ Refunded</span>
+                            </t>
+                            <t t-else="">
+                              <span class="deposit-badge deposit-badge--held">🛡️ Held</span>
+                            </t>
+                          </td>
+                          <!-- Total -->
+                          <td style="font-weight:600; color:#A78BFA;">₹<t t-esc="'%.0f' % order.amount_total"/></td>
+                          <!-- Actions -->
+                          <td>
+                            <div style="display:flex; gap:8px;">
+                              <a t-attf-href="/my/orders/#{order.id}" style="padding:5px 12px; border-radius:6px; border:1px solid rgba(148,163,184,0.12); background:transparent; font-size:0.75rem; font-weight:500; cursor:pointer; color:#94A3B8; text-decoration:none; transition:all 0.2s;"
+                                 onmouseover="this.style.borderColor='rgba(124,58,237,0.4)'; this.style.color='#A78BFA'"
+                                 onmouseout="this.style.borderColor='rgba(148,163,184,0.12)'; this.style.color='#94A3B8'">View</a>
+                              <t t-if="order.invoice_ids">
+                                <a t-attf-href="/report/pdf/account.report_invoice/#{order.invoice_ids[0].id}"
+                                   style="padding:5px 12px; border-radius:6px; border:1px solid rgba(124,58,237,0.25); background:rgba(124,58,237,0.08); font-size:0.75rem; font-weight:500; cursor:pointer; color:#A78BFA; text-decoration:none; transition:all 0.2s;"
+                                   onmouseover="this.style.background='rgba(124,58,237,0.2)'"
+                                   onmouseout="this.style.background='rgba(124,58,237,0.08)'">📄 Invoice</a>
+                              </t>
+                            </div>
+                          </td>
+                        </tr>
+                      </t>
+                    </tbody>
+                  </table>
+                </div>
+
+                <!-- Pagination -->
+                <t t-if="pager">
+                  <div style="padding:16px 24px; border-top:1px solid rgba(148,163,184,0.08); display:flex; justify-content:center; gap:8px;">
+                    <t t-call="website.pager"/>
+                  </div>
+                </t>
+
+              </t>
+              <t t-else="">
+                <div style="text-align:center; padding:60px 24px; color:#94A3B8;">
+                  <div style="font-size:3.5rem; margin-bottom:16px; opacity:0.3;">📦</div>
+                  <h3 style="font-size:1.1rem; color:#64748B; margin-bottom:8px;">No rentals yet</h3>
+                  <p style="font-size:0.875rem;">Start browsing premium hardware and make your first rental today.</p>
+                  <a href="/rental" style="display:inline-flex; align-items:center; gap:8px; margin-top:20px; padding:12px 24px; border-radius:10px; background:linear-gradient(135deg,#7C3AED,#06B6D4); color:#fff; text-decoration:none; font-weight:600; font-size:0.9rem;">
+                    Browse Products →
+                  </a>
+                </div>
+              </t>
+            </div>
+          </main>
+        </div>
+      </div>
+    </xpath>
+  </template>
+</odoo>

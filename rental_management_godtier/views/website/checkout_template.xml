@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <!-- ============================================================
+       Checkout Template — /rental/checkout
+       ============================================================ -->
+  <template id="omni_checkout" name="OmniRent Pro — Checkout" website="True">
+    <t t-call="website.layout">
+      <t t-set="pageName" t-value="'OmniRent Pro — Checkout'"/>
+
+      <div class="omni-checkout o_rental_module">
+        <div class="container">
+          <h1 style="font-family:'Space Grotesk',sans-serif; font-size:2rem; font-weight:700; text-align:center; margin-bottom:8px;">
+            Secure <span style="background:linear-gradient(135deg,#A78BFA,#67E8F9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Checkout</span>
+          </h1>
+          <p style="text-align:center; color:#94A3B8; margin-bottom:32px;">Complete your rental booking in a few simple steps.</p>
+
+          <!-- Progress Steps -->
+          <div class="omni-checkout__progress">
+            <div class="step step--done">
+              <div class="step__node">
+                <div class="node-circle">✓</div>
+                <div class="node-label">Cart</div>
+              </div>
+            </div>
+            <div class="step__connector filled"></div>
+            <div class="step step--active">
+              <div class="step__node">
+                <div class="node-circle">2</div>
+                <div class="node-label">Delivery</div>
+              </div>
+            </div>
+            <div class="step__connector"></div>
+            <div class="step">
+              <div class="step__node">
+                <div class="node-circle">3</div>
+                <div class="node-label">Payment</div>
+              </div>
+            </div>
+            <div class="step__connector"></div>
+            <div class="step">
+              <div class="step__node">
+                <div class="node-circle">4</div>
+                <div class="node-label">Confirm</div>
+              </div>
+            </div>
+          </div>
+
+          <form action="/rental/checkout/confirm" method="post" id="checkout-form">
+            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+            <input type="hidden" name="delivery_type" id="hidden-delivery-type" value=""/>
+
+            <div class="omni-checkout__layout">
+              <!-- ── Main Panel ────────────────────────────── -->
+              <div class="omni-checkout__main">
+
+                <!-- DELIVERY SECTION -->
+                <div class="omni-checkout__section">
+                  <div class="omni-checkout__section__header">
+                    <div class="section-icon">🚚</div>
+                    <h3>Delivery Method</h3>
+                    <span style="margin-left:auto; font-size:0.75rem; color:#EF4444; font-weight:600;">* Required</span>
+                  </div>
+
+                  <p style="font-size:0.85rem; color:#94A3B8; margin-bottom:20px;">
+                    Please select how you'd like to receive your rental equipment.
+                  </p>
+
+                  <!-- Delivery Option Cards -->
+                  <div class="omni-checkout__delivery-options">
+                    <!-- Deliver to Address -->
+                    <label class="delivery-card" id="delivery-card-address" onclick="omniCheckout.selectDelivery('address', this)">
+                      <input type="radio" name="delivery_choice" value="address"/>
+                      <div class="delivery-card__check">✓</div>
+                      <span class="delivery-card__icon">🏠</span>
+                      <div class="delivery-card__title">Home / Office Delivery</div>
+                      <div class="delivery-card__desc">We deliver the equipment directly to your specified address. Delivery charges apply based on location.</div>
+                    </label>
+
+                    <!-- Collect from Store -->
+                    <label class="delivery-card delivery-card--pickup" id="delivery-card-pickup" onclick="omniCheckout.selectDelivery('pickup', this)">
+                      <input type="radio" name="delivery_choice" value="pickup"/>
+                      <div class="delivery-card__check">✓</div>
+                      <span class="delivery-card__icon">🏪</span>
+                      <div class="delivery-card__title">Collect from Store</div>
+                      <div class="delivery-card__desc">Pick up the equipment from our nearest service center. Free of charge — bring your booking QR code.</div>
+                    </label>
+                  </div>
+
+                  <!-- Address Form (shows on address selection) -->
+                  <div class="omni-checkout__address-form" id="address-form">
+                    <div class="form-grid">
+                      <div class="omni-field">
+                        <input type="text" id="addr-name" name="addr_name" class="omni-field__input" placeholder=" " t-att-value="partner.name if partner else ''"/>
+                        <label for="addr-name" class="omni-field__label">Full Name</label>
+                      </div>
+                      <div class="omni-field">
+                        <input type="tel" id="addr-phone" name="addr_phone" class="omni-field__input" placeholder=" " t-att-value="partner.phone if partner else ''"/>
+                        <label for="addr-phone" class="omni-field__label">Phone Number</label>
+                      </div>
+                      <div class="omni-field full-width">
+                        <input type="text" id="addr-street" name="addr_street" class="omni-field__input" placeholder=" "/>
+                        <label for="addr-street" class="omni-field__label">Street Address</label>
+                      </div>
+                      <div class="omni-field">
+                        <input type="text" id="addr-city" name="addr_city" class="omni-field__input" placeholder=" " t-att-value="partner.city if partner else ''"/>
+                        <label for="addr-city" class="omni-field__label">City</label>
+                      </div>
+                      <div class="omni-field">
+                        <input type="text" id="addr-state" name="addr_state" class="omni-field__input" placeholder=" " t-att-value="partner.state_id.name if partner else ''"/>
+                        <label for="addr-state" class="omni-field__label">State</label>
+                      </div>
+                      <div class="omni-field">
+                        <input type="text" id="addr-zip" name="addr_zip" class="omni-field__input" placeholder=" " t-att-value="partner.zip if partner else ''"/>
+                        <label for="addr-zip" class="omni-field__label">PIN Code</label>
+                      </div>
+                      <div class="omni-field">
+                        <input type="text" id="addr-country" name="addr_country" class="omni-field__input" placeholder=" " value="India"/>
+                        <label for="addr-country" class="omni-field__label">Country</label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Store Pickup Info (shows on pickup selection) -->
+                  <div class="omni-checkout__pickup-info" id="pickup-info">
+                    <div class="pickup-location">
+                      <span class="map-pin">📍</span>
+                      <div class="location-info">
+                        <h4>OmniRent Pro Service Center — Sector 5, Kolkata</h4>
+                        <p>Block A, Tech Park, Salt Lake Sector V, Kolkata, West Bengal — 700091</p>
+                        <div class="hours">
+                          <span class="day-hours">Mon–Fri: 9AM–7PM</span>
+                          <span class="day-hours">Saturday: 10AM–5PM</span>
+                          <span class="day-hours">Sunday: Closed</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ORDER NOTES SECTION -->
+                <div class="omni-checkout__section">
+                  <div class="omni-checkout__section__header">
+                    <div class="section-icon">📝</div>
+                    <h3>Special Instructions</h3>
+                  </div>
+                  <div class="omni-field">
+                    <textarea id="order-notes" name="notes" class="omni-field__input" placeholder=" " rows="3" style="padding-top:20px; resize:vertical;"></textarea>
+                    <label for="order-notes" class="omni-field__label">Any special requirements or notes?</label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── Sidebar Summary ───────────────────────── -->
+              <div class="omni-checkout__sidebar">
+                <div class="order-summary">
+                  <div class="order-summary__title">📋 Order Summary</div>
+
+                  <div class="order-summary__items">
+                    <t t-foreach="order.order_line" t-as="line">
+                      <div class="summary-item">
+                        <img t-att-src="'/web/image/product.product/%s/image_128' % line.product_id.id"
+                             t-att-alt="line.product_id.name"
+                             class="summary-item__img"
+                             onerror="this.style.display='none'"/>
+                        <div class="summary-item__info">
+                          <div class="item-name"><t t-esc="line.product_id.name"/></div>
+                          <div class="item-period">
+                            <t t-esc="line.rental_start_date and line.rental_start_date.strftime('%b %d') or ''"/> →
+                            <t t-esc="line.rental_return_date and line.rental_return_date.strftime('%b %d') or ''"/>
+                          </div>
+                        </div>
+                        <div class="summary-item__price">₹<t t-esc="'%.0f' % line.price_subtotal"/></div>
+                      </div>
+                    </t>
+                  </div>
+
+                  <!-- Security Deposit Breakdown -->
+                  <div class="deposit-breakdown">
+                    <div class="deposit-breakdown__header">
+                      <span class="shield-icon">🛡️</span>
+                      Security Deposit (Mandatory)
+                    </div>
+                    <div class="deposit-breakdown__row">
+                      <span class="row-label">Base Rental Total</span>
+                      <span class="row-value">₹<t t-esc="'%.0f' % order.amount_untaxed"/></span>
+                    </div>
+                    <div class="deposit-breakdown__row">
+                      <span class="row-label">Taxes &amp; Fees</span>
+                      <span class="row-value">₹<t t-esc="'%.0f' % order.amount_tax"/></span>
+                    </div>
+                    <div class="deposit-breakdown__row highlight">
+                      <span class="row-label">🛡️ Security Deposit</span>
+                      <span class="row-value">₹<t t-esc="'%.0f' % (order.amount_total * 0.3)"/></span>
+                    </div>
+                    <div class="deposit-breakdown__note">
+                      ℹ️ The security deposit is fully refundable upon on-time return in good condition.
+                    </div>
+                  </div>
+
+                  <!-- Price Rows -->
+                  <div class="price-row">
+                    <span class="label">Subtotal</span>
+                    <span class="value">₹<t t-esc="'%.0f' % order.amount_untaxed"/></span>
+                  </div>
+                  <div class="price-row" id="delivery-fee-row" style="display:none;">
+                    <span class="label">Delivery Fee</span>
+                    <span class="value" id="delivery-fee-val">₹299</span>
+                  </div>
+                  <div class="price-row">
+                    <span class="label">GST (18%)</span>
+                    <span class="value">₹<t t-esc="'%.0f' % order.amount_tax"/></span>
+                  </div>
+                  <div class="price-row--total price-row">
+                    <span class="label">Total Payable</span>
+                    <span class="value" id="checkout-total">₹<t t-esc="'%.0f' % (order.amount_total * 1.3)"/></span>
+                  </div>
+
+                  <button type="submit" class="pay-btn" id="pay-btn" onclick="return omniCheckout.validateAndSubmit()">
+                    <span class="lock-icon">🔒</span>
+                    Pay &amp; Confirm Booking
+                  </button>
+
+                  <div class="secure-note">
+                    <span class="shield">🛡️</span>
+                    256-bit SSL Encrypted. Your data is safe.
+                  </div>
+
+                  <div style="display:flex; justify-content:center; gap:12px; margin-top:16px; opacity:0.5;">
+                    <span style="font-size:1.5rem;">💳</span>
+                    <span style="font-size:1.5rem;">🏦</span>
+                    <span style="font-size:1.5rem;">📱</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </t>
+  </template>
+</odoo>

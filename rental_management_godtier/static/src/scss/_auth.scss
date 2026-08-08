@@ -1,0 +1,436 @@
+@import 'variables';
+
+// ============================================================
+// Authentication — Login, Register, Profile Creation
+// ============================================================
+
+.omni-auth {
+  min-height: 100vh;
+  background: $gradient-dark;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $space-lg;
+  font-family: $font-body;
+
+  // Background decoration
+  &::before {
+    content: '';
+    position: absolute;
+    width: 700px;
+    height: 700px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(124,58,237,0.15) 0%, transparent 70%);
+    top: -200px;
+    right: -200px;
+    pointer-events: none;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(6,182,212,0.12) 0%, transparent 70%);
+    bottom: -150px;
+    left: -100px;
+    pointer-events: none;
+  }
+
+  // ── Auth Card ──────────────────────────────────────────────
+  &__card {
+    @include glass-card(24px, rgba(10, 15, 30, 0.85));
+    width: 100%;
+    max-width: 460px;
+    padding: $space-2xl $space-xl;
+    position: relative;
+    z-index: 1;
+    box-shadow: $shadow-card, $shadow-glow-primary;
+    animation: card-enter 0.5s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
+    transform-origin: center bottom;
+
+    // Gradient border glow
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: $radius-lg;
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(124,58,237,0.5), rgba(6,182,212,0.2), rgba(124,58,237,0.1));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+  }
+
+  // ── Logo & Header ──────────────────────────────────────────
+  &__logo {
+    text-align: center;
+    margin-bottom: $space-xl;
+
+    .logo-mark {
+      width: 60px;
+      height: 60px;
+      margin: 0 auto $space-md;
+      border-radius: $radius-md;
+      background: $gradient-primary;
+      @include flex-center;
+      font-size: 28px;
+      box-shadow: $shadow-glow-primary;
+    }
+  }
+
+  &__title {
+    font-family: $font-heading;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: $color-text-primary;
+    text-align: center;
+    margin-bottom: $space-sm;
+    letter-spacing: -0.02em;
+
+    span {
+      @include gradient-text;
+    }
+  }
+
+  &__subtitle {
+    color: $color-text-secondary;
+    text-align: center;
+    font-size: 0.9rem;
+    margin-bottom: $space-xl;
+    line-height: 1.5;
+  }
+
+  // ── Step Indicator (for multi-step register) ───────────────
+  &__steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: $space-xl;
+
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      position: relative;
+
+      &__dot {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        @include flex-center;
+        font-size: 0.75rem;
+        font-weight: 700;
+        background: $color-bg-elevated;
+        border: 2px solid $glass-border;
+        color: $color-text-muted;
+        transition: $transition-base;
+        z-index: 1;
+      }
+
+      &__label {
+        font-size: 0.7rem;
+        color: $color-text-muted;
+        white-space: nowrap;
+        transition: $transition-base;
+      }
+
+      &--active .step__dot {
+        background: $gradient-primary;
+        border-color: $color-primary;
+        color: #fff;
+        box-shadow: $shadow-glow-primary;
+      }
+
+      &--active .step__label {
+        color: $color-primary-light;
+      }
+
+      &--done .step__dot {
+        background: rgba(16, 185, 129, 0.2);
+        border-color: $color-success;
+        color: $color-success;
+      }
+
+      // Connector line
+      & + .step::before {
+        content: '';
+        position: absolute;
+        right: 100%;
+        top: 15px;
+        width: 48px;
+        height: 2px;
+        background: $glass-border;
+        transition: $transition-slow;
+      }
+
+      &--done + .step::before {
+        background: $gradient-primary;
+      }
+    }
+  }
+
+  // ── Form ──────────────────────────────────────────────────
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: $space-md;
+  }
+
+  // ── Floating Label Input ───────────────────────────────────
+  .omni-field {
+    position: relative;
+
+    &__input {
+      width: 100%;
+      background: rgba(30, 41, 59, 0.5);
+      border: 1px solid $glass-border;
+      border-radius: $radius-md;
+      padding: 18px 16px 8px;
+      color: $color-text-primary;
+      font-family: $font-body;
+      font-size: 0.9375rem;
+      outline: none;
+      transition: $transition-base;
+      -webkit-text-fill-color: $color-text-primary;
+
+      &:-webkit-autofill {
+        -webkit-box-shadow: 0 0 0 100px rgba(30,41,59,0.9) inset;
+        -webkit-text-fill-color: $color-text-primary;
+      }
+
+      &::placeholder {
+        opacity: 0;
+      }
+
+      &:focus {
+        border-color: $color-primary;
+        box-shadow: 0 0 0 3px rgba(124,58,237,0.15);
+        background: rgba(30, 41, 59, 0.8);
+      }
+
+      &.is-error {
+        border-color: $color-danger;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+      }
+    }
+
+    &__label {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: $color-text-muted;
+      font-size: 0.9375rem;
+      pointer-events: none;
+      transition: $transition-fast;
+      transform-origin: left center;
+    }
+
+    // Float label when input has content or is focused
+    &__input:focus ~ &__label,
+    &__input:not(:placeholder-shown) ~ &__label {
+      top: 10px;
+      transform: translateY(0) scale(0.75);
+      color: $color-primary-light;
+    }
+
+    &__icon {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: $color-text-muted;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: $transition-fast;
+
+      &:hover {
+        color: $color-primary-light;
+      }
+    }
+
+    &__error {
+      font-size: 0.78rem;
+      color: $color-danger;
+      margin-top: 4px;
+      padding-left: 4px;
+      animation: fade-in-down 0.2s ease;
+    }
+  }
+
+  // ── Avatar Upload (Profile Creation) ──────────────────────
+  &__avatar-upload {
+    @include flex-center;
+    flex-direction: column;
+    gap: $space-md;
+    margin-bottom: $space-lg;
+
+    .avatar-ring {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      position: relative;
+      cursor: pointer;
+
+      &__preview {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+        background: $color-bg-elevated;
+        @include flex-center;
+        border: 2px solid $glass-border;
+        overflow: hidden;
+        transition: $transition-base;
+
+        .avatar-placeholder {
+          font-size: 36px;
+          color: $color-text-muted;
+        }
+      }
+
+      &__overlay {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        background: rgba(124, 58, 237, 0.7);
+        @include flex-center;
+        opacity: 0;
+        transition: $transition-base;
+        cursor: pointer;
+        font-size: 1.25rem;
+        color: #fff;
+      }
+
+      &:hover &__overlay {
+        opacity: 1;
+      }
+
+      &:hover &__preview {
+        border-color: $color-primary;
+        box-shadow: $shadow-glow-primary;
+      }
+
+      input[type="file"] {
+        display: none;
+      }
+    }
+
+    .upload-hint {
+      font-size: 0.8rem;
+      color: $color-text-muted;
+    }
+  }
+
+  // ── Divider ───────────────────────────────────────────────
+  &__divider {
+    display: flex;
+    align-items: center;
+    gap: $space-md;
+    margin: $space-lg 0;
+
+    &::before, &::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: $glass-border;
+    }
+
+    span {
+      font-size: 0.8rem;
+      color: $color-text-muted;
+      white-space: nowrap;
+    }
+  }
+
+  // ── SSO Button ────────────────────────────────────────────
+  &__sso-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $space-sm;
+    padding: 12px;
+    background: $glass-bg-light;
+    border: 1px solid $glass-border;
+    border-radius: $radius-md;
+    color: $color-text-primary;
+    cursor: pointer;
+    transition: $transition-base;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+
+    img {
+      width: 20px;
+      height: 20px;
+    }
+
+    &:hover {
+      background: rgba(124, 58, 237, 0.1);
+      border-color: $color-primary;
+      color: $color-text-primary;
+      text-decoration: none;
+    }
+  }
+
+  // ── Footer Link ───────────────────────────────────────────
+  &__footer {
+    text-align: center;
+    margin-top: $space-lg;
+    font-size: 0.875rem;
+    color: $color-text-secondary;
+
+    a {
+      color: $color-primary-light;
+      text-decoration: none;
+      font-weight: 500;
+      transition: $transition-fast;
+
+      &:hover {
+        color: $color-accent;
+      }
+    }
+  }
+
+  // ── Alerts ────────────────────────────────────────────────
+  &__alert {
+    padding: 12px 16px;
+    border-radius: $radius-md;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: $space-sm;
+    animation: fade-in-down 0.3s ease;
+
+    &--error {
+      background: rgba(239,68,68,0.12);
+      border: 1px solid rgba(239,68,68,0.3);
+      color: #FCA5A5;
+    }
+
+    &--success {
+      background: rgba(16,185,129,0.12);
+      border: 1px solid rgba(16,185,129,0.3);
+      color: #6EE7B7;
+    }
+  }
+}
+
+// ── Keyframes ─────────────────────────────────────────────────
+@keyframes card-enter {
+  from { opacity: 0; transform: scale(0.95) translateY(20px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes fade-in-down {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

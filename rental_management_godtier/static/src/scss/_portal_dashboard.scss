@@ -1,0 +1,583 @@
+@import 'variables';
+
+// ============================================================
+// Portal Dashboard — /my/rentals customer portal
+// ============================================================
+
+.omni-portal {
+  background: $color-bg-base;
+  min-height: 100vh;
+  font-family: $font-body;
+  color: $color-text-primary;
+
+  // ── Layout ────────────────────────────────────────────────
+  &__layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    min-height: calc(100vh - 80px);
+    max-width: 1400px;
+    margin: 0 auto;
+
+    @media (max-width: $bp-lg) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  // ── Sidebar ───────────────────────────────────────────────
+  &__sidebar {
+    @include glass-card($blur: 16px, $bg: rgba(10,15,30,0.9), $border: $glass-border);
+    border-radius: 0;
+    border-left: none;
+    border-top: none;
+    border-bottom: none;
+    padding: $space-xl 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+
+    @media (max-width: $bp-lg) {
+      display: none;
+    }
+  }
+
+  // User Profile Block
+  .portal-user {
+    text-align: center;
+    padding: 0 $space-lg $space-xl;
+    border-bottom: 1px solid $glass-border;
+    margin-bottom: $space-lg;
+
+    &__avatar {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      margin: 0 auto $space-md;
+      cursor: pointer;
+
+      img, .avatar-placeholder {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid $glass-border-bright;
+        background: $color-bg-elevated;
+        @include flex-center;
+        font-size: 2rem;
+        color: $color-text-muted;
+      }
+
+      .avatar-edit-overlay {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        background: rgba(124,58,237,0.75);
+        @include flex-center;
+        font-size: 1.1rem;
+        color: #fff;
+        opacity: 0;
+        transition: $transition-fast;
+      }
+
+      &:hover .avatar-edit-overlay { opacity: 1; }
+      &:hover img { border-color: $color-primary; }
+    }
+
+    &__name {
+      font-family: $font-heading;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: $color-text-primary;
+      margin-bottom: 4px;
+    }
+
+    &__email {
+      font-size: 0.78rem;
+      color: $color-text-muted;
+      word-break: break-all;
+    }
+
+    &__tier {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: $space-sm;
+      padding: 4px 12px;
+      border-radius: $radius-pill;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(6,182,212,0.2));
+      border: 1px solid rgba(124,58,237,0.3);
+      color: $color-primary-light;
+
+      .tier-star { color: $color-warning; }
+    }
+  }
+
+  // Sidebar Navigation
+  .portal-nav {
+    flex: 1;
+    padding: 0 $space-md;
+
+    &__group {
+      margin-bottom: $space-lg;
+
+      &-title {
+        font-size: 0.68rem;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: $color-text-muted;
+        font-weight: 600;
+        padding: 0 $space-sm;
+        margin-bottom: $space-sm;
+      }
+    }
+
+    &__item {
+      display: flex;
+      align-items: center;
+      gap: $space-md;
+      padding: 10px $space-md;
+      border-radius: $radius-md;
+      text-decoration: none;
+      color: $color-text-secondary;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: $transition-fast;
+      cursor: pointer;
+      border: 1px solid transparent;
+      margin-bottom: 2px;
+
+      .nav-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: $radius-sm;
+        background: $color-bg-elevated;
+        @include flex-center;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+        transition: $transition-fast;
+      }
+
+      .nav-badge {
+        margin-left: auto;
+        min-width: 22px;
+        height: 22px;
+        border-radius: $radius-pill;
+        background: rgba(124,58,237,0.2);
+        @include flex-center;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: $color-primary-light;
+        padding: 0 6px;
+      }
+
+      &:hover {
+        background: $glass-bg-light;
+        color: $color-text-primary;
+        border-color: $glass-border;
+        text-decoration: none;
+
+        .nav-icon {
+          background: rgba(124,58,237,0.2);
+          color: $color-primary-light;
+        }
+      }
+
+      &.active {
+        background: linear-gradient(135deg, rgba(124,58,237,0.15), rgba(6,182,212,0.08));
+        border-color: rgba(124,58,237,0.25);
+        color: $color-primary-light;
+
+        .nav-icon {
+          background: $gradient-primary;
+          color: #fff;
+          box-shadow: 0 2px 10px $color-primary-glow;
+        }
+      }
+    }
+  }
+
+  // Sidebar Footer
+  .portal-sidebar-footer {
+    padding: $space-lg $space-md 0;
+    border-top: 1px solid $glass-border;
+    margin-top: auto;
+
+    .logout-btn {
+      display: flex;
+      align-items: center;
+      gap: $space-md;
+      padding: 10px $space-md;
+      border-radius: $radius-md;
+      width: 100%;
+      background: transparent;
+      border: 1px solid $glass-border;
+      color: $color-text-muted;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: $transition-fast;
+
+      &:hover {
+        background: rgba(239,68,68,0.08);
+        border-color: rgba(239,68,68,0.3);
+        color: #FCA5A5;
+      }
+    }
+  }
+
+  // ── Main Content ──────────────────────────────────────────
+  &__main {
+    padding: $space-2xl $space-xl;
+
+    @media (max-width: $bp-md) {
+      padding: $space-lg;
+    }
+  }
+
+  // Page Header
+  .portal-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: $space-xl;
+
+    h1 {
+      font-family: $font-heading;
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+
+      span { @include gradient-text; }
+    }
+
+    p {
+      color: $color-text-secondary;
+      font-size: 0.9rem;
+      margin-top: 4px;
+    }
+  }
+
+  // ── Rental Stats Bar ──────────────────────────────────────
+  .portal-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: $space-md;
+    margin-bottom: $space-xl;
+
+    .stat-card {
+      @include glass-card;
+      padding: $space-lg;
+      text-align: center;
+      transition: $transition-base;
+
+      &:hover {
+        border-color: rgba(124,58,237,0.3);
+        transform: translateY(-2px);
+      }
+
+      .stat-value {
+        font-family: $font-heading;
+        font-size: 2rem;
+        font-weight: 700;
+        @include gradient-text;
+        line-height: 1;
+        margin-bottom: 6px;
+      }
+
+      .stat-label {
+        font-size: 0.78rem;
+        color: $color-text-muted;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-weight: 500;
+      }
+    }
+  }
+
+  // ── Rental Orders Table ───────────────────────────────────
+  .rental-table-wrap {
+    @include glass-card;
+    overflow: hidden;
+
+    .table-header {
+      padding: $space-lg $space-xl;
+      border-bottom: 1px solid $glass-border;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      h2 {
+        font-family: $font-heading;
+        font-size: 1.1rem;
+        font-weight: 600;
+      }
+
+      .table-actions {
+        display: flex;
+        gap: $space-sm;
+      }
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+
+      thead tr {
+        background: rgba(30,41,59,0.5);
+
+        th {
+          padding: $space-md $space-lg;
+          text-align: left;
+          font-size: 0.72rem;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          color: $color-text-muted;
+          font-weight: 600;
+          white-space: nowrap;
+        }
+      }
+
+      tbody tr {
+        border-top: 1px solid $glass-border;
+        transition: $transition-fast;
+
+        &:hover {
+          background: rgba(124,58,237,0.04);
+        }
+
+        td {
+          padding: $space-md $space-lg;
+          vertical-align: middle;
+          color: $color-text-secondary;
+        }
+      }
+    }
+
+    // Product cell
+    .product-cell {
+      display: flex;
+      align-items: center;
+      gap: $space-md;
+
+      img {
+        width: 44px;
+        height: 44px;
+        border-radius: $radius-md;
+        object-fit: cover;
+        background: $color-bg-elevated;
+        flex-shrink: 0;
+      }
+
+      .product-name {
+        font-weight: 500;
+        color: $color-text-primary;
+        font-size: 0.875rem;
+        line-height: 1.3;
+      }
+
+      .product-id {
+        font-size: 0.72rem;
+        color: $color-text-muted;
+        font-family: $font-mono;
+      }
+    }
+
+    // Period cell
+    .period-cell {
+      white-space: nowrap;
+
+      .dates {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+
+        .start-date, .end-date {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 0.8rem;
+
+          .cal-icon { font-size: 0.7rem; color: $color-text-muted; }
+        }
+
+        .end-date {
+          .due-label {
+            font-size: 0.68rem;
+            padding: 2px 6px;
+            border-radius: $radius-pill;
+            background: rgba(245,158,11,0.15);
+            border: 1px solid rgba(245,158,11,0.3);
+            color: #FCD34D;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+          }
+        }
+      }
+    }
+  }
+
+  // ── Status Badges ─────────────────────────────────────────
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: $radius-pill;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+
+    &::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    &--active {
+      background: rgba(16,185,129,0.12);
+      border: 1px solid rgba(16,185,129,0.3);
+      color: #6EE7B7;
+      &::before { background: $color-success; box-shadow: 0 0 6px $color-success; animation: pulse-dot 1.5s ease-in-out infinite; }
+    }
+
+    &--overdue {
+      background: rgba(239,68,68,0.12);
+      border: 1px solid rgba(239,68,68,0.35);
+      color: #FCA5A5;
+      &::before { background: $color-danger; box-shadow: 0 0 6px $color-danger; animation: pulse-dot 1s ease-in-out infinite; }
+    }
+
+    &--returned {
+      background: rgba(71,85,105,0.2);
+      border: 1px solid rgba(71,85,105,0.4);
+      color: $color-text-muted;
+      &::before { background: $color-text-muted; }
+    }
+
+    &--pending {
+      background: rgba(59,130,246,0.12);
+      border: 1px solid rgba(59,130,246,0.3);
+      color: #93C5FD;
+      &::before { background: $color-info; }
+    }
+
+    &--confirmed {
+      background: rgba(124,58,237,0.12);
+      border: 1px solid rgba(124,58,237,0.3);
+      color: $color-primary-light;
+      &::before { background: $color-primary; }
+    }
+  }
+
+  // Deposit badge
+  .deposit-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: $radius-pill;
+    font-size: 0.72rem;
+    font-weight: 600;
+    white-space: nowrap;
+
+    &--held {
+      background: rgba(245,158,11,0.12);
+      border: 1px solid rgba(245,158,11,0.3);
+      color: #FCD34D;
+    }
+
+    &--refunded {
+      background: rgba(16,185,129,0.12);
+      border: 1px solid rgba(16,185,129,0.3);
+      color: #6EE7B7;
+    }
+
+    &--forfeited {
+      background: rgba(239,68,68,0.12);
+      border: 1px solid rgba(239,68,68,0.3);
+      color: #FCA5A5;
+    }
+
+    &--partial {
+      background: rgba(59,130,246,0.12);
+      border: 1px solid rgba(59,130,246,0.3);
+      color: #93C5FD;
+    }
+  }
+
+  // ── Profile Edit Section ──────────────────────────────────
+  .profile-edit-card {
+    @include glass-card;
+    padding: $space-xl;
+    margin-bottom: $space-lg;
+
+    .card-title {
+      font-family: $font-heading;
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: $space-xl;
+      padding-bottom: $space-md;
+      border-bottom: 1px solid $glass-border;
+      display: flex;
+      align-items: center;
+      gap: $space-sm;
+
+      .title-icon {
+        width: 30px;
+        height: 30px;
+        border-radius: $radius-sm;
+        background: rgba(124,58,237,0.2);
+        @include flex-center;
+        color: $color-primary-light;
+        font-size: 0.875rem;
+      }
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: $space-md;
+
+      @media (max-width: $bp-md) {
+        grid-template-columns: 1fr;
+      }
+
+      .full-width { grid-column: 1 / -1; }
+    }
+
+    .save-btn {
+      margin-top: $space-lg;
+      padding: 12px $space-xl;
+      border-radius: $radius-md;
+      background: $gradient-primary;
+      color: #fff;
+      border: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: $transition-spring;
+      box-shadow: 0 4px 15px $color-primary-glow;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px $color-primary-glow;
+      }
+    }
+  }
+}
+
+// ── Keyframes ─────────────────────────────────────────────────
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.8); }
+}

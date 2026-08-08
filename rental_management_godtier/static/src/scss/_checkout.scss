@@ -1,0 +1,543 @@
+@import 'variables';
+
+// ============================================================
+// Checkout — Multi-step flow, delivery choice, deposit display
+// ============================================================
+
+.omni-checkout {
+  background: $color-bg-base;
+  min-height: 100vh;
+  font-family: $font-body;
+  color: $color-text-primary;
+  padding: $space-xl 0 $space-3xl;
+
+  // ── Progress Steps ────────────────────────────────────────
+  &__progress {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: $space-2xl;
+
+    .step {
+      display: flex;
+      align-items: center;
+
+      &__node {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        position: relative;
+
+        .node-circle {
+          width: 42px;
+          height: 42px;
+          border-radius: 50%;
+          @include flex-center;
+          font-weight: 700;
+          font-size: 0.9rem;
+          border: 2px solid $glass-border;
+          background: $color-bg-elevated;
+          color: $color-text-muted;
+          transition: $transition-base;
+          position: relative;
+          z-index: 1;
+        }
+
+        .node-label {
+          font-size: 0.75rem;
+          color: $color-text-muted;
+          white-space: nowrap;
+          transition: $transition-base;
+          font-weight: 500;
+        }
+      }
+
+      &__connector {
+        width: 80px;
+        height: 2px;
+        background: $glass-border;
+        margin-bottom: 24px;
+        position: relative;
+        overflow: hidden;
+
+        &::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: $gradient-primary;
+          transform: translateX(-100%);
+          transition: transform 0.5s ease;
+        }
+
+        &.filled::after { transform: translateX(0); }
+      }
+
+      &--active .node-circle {
+        background: $gradient-primary;
+        border-color: $color-primary;
+        color: #fff;
+        box-shadow: $shadow-glow-primary;
+      }
+
+      &--active .node-label { color: $color-primary-light; }
+
+      &--done .node-circle {
+        background: rgba(16,185,129,0.2);
+        border-color: $color-success;
+        color: $color-success;
+      }
+
+      &--done .node-label { color: $color-success; }
+    }
+  }
+
+  // ── Layout ────────────────────────────────────────────────
+  &__layout {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: $space-xl;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 $space-lg;
+
+    @media (max-width: $bp-lg) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  // ── Main Panel ────────────────────────────────────────────
+  &__main {
+    display: flex;
+    flex-direction: column;
+    gap: $space-lg;
+  }
+
+  // ── Section Card ──────────────────────────────────────────
+  &__section {
+    @include glass-card;
+    padding: $space-xl;
+    animation: section-enter 0.4s ease forwards;
+
+    &__header {
+      display: flex;
+      align-items: center;
+      gap: $space-md;
+      margin-bottom: $space-xl;
+      padding-bottom: $space-lg;
+      border-bottom: 1px solid $glass-border;
+
+      .section-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: $radius-md;
+        background: $gradient-primary;
+        @include flex-center;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+        box-shadow: 0 4px 12px $color-primary-glow;
+      }
+
+      h3 {
+        font-family: $font-heading;
+        font-size: 1.15rem;
+        font-weight: 600;
+        margin: 0;
+      }
+
+      .edit-link {
+        margin-left: auto;
+        font-size: 0.8rem;
+        color: $color-accent;
+        cursor: pointer;
+        text-decoration: none;
+        transition: $transition-fast;
+
+        &:hover { color: $color-accent-light; }
+      }
+    }
+  }
+
+  // ── Delivery Option Cards ─────────────────────────────────
+  &__delivery-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: $space-md;
+    margin-bottom: $space-lg;
+
+    @media (max-width: $bp-md) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .delivery-card {
+    position: relative;
+    border-radius: $radius-lg;
+    border: 2px solid $glass-border;
+    background: rgba(30,41,59,0.3);
+    padding: $space-lg;
+    cursor: pointer;
+    transition: $transition-base;
+    overflow: hidden;
+
+    input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    &__icon {
+      font-size: 2rem;
+      margin-bottom: $space-md;
+      display: block;
+      transition: $transition-base;
+    }
+
+    &__title {
+      font-family: $font-heading;
+      font-size: 1rem;
+      font-weight: 600;
+      color: $color-text-primary;
+      margin-bottom: $space-sm;
+    }
+
+    &__desc {
+      font-size: 0.85rem;
+      color: $color-text-secondary;
+      line-height: 1.5;
+    }
+
+    &__check {
+      position: absolute;
+      top: $space-md;
+      right: $space-md;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid $glass-border;
+      background: transparent;
+      transition: $transition-base;
+      @include flex-center;
+      font-size: 0.7rem;
+      color: transparent;
+    }
+
+    // Selected state
+    &.is-selected {
+      border-color: $color-primary;
+      background: rgba(124,58,237,0.08);
+      box-shadow: 0 0 0 1px rgba(124,58,237,0.3), 0 8px 24px rgba(124,58,237,0.12);
+
+      .delivery-card__check {
+        background: $gradient-primary;
+        border-color: $color-primary;
+        color: #fff;
+        box-shadow: $shadow-glow-primary;
+      }
+
+      .delivery-card__icon { transform: scale(1.1); }
+      .delivery-card__title { color: $color-primary-light; }
+    }
+
+    &:hover:not(.is-selected) {
+      border-color: rgba(124,58,237,0.4);
+      background: rgba(124,58,237,0.04);
+    }
+
+    // Store pickup variant
+    &--pickup.is-selected {
+      border-color: $color-accent;
+      background: rgba(6,182,212,0.08);
+      box-shadow: 0 0 0 1px rgba(6,182,212,0.3), 0 8px 24px rgba(6,182,212,0.12);
+
+      .delivery-card__check {
+        background: linear-gradient(135deg, $color-accent, $color-accent-dark);
+        border-color: $color-accent;
+        box-shadow: $shadow-glow-accent;
+      }
+
+      .delivery-card__title { color: $color-accent-light; }
+    }
+  }
+
+  // ── Address Form (slides in when delivery selected) ───────
+  &__address-form {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.4s ease, opacity 0.3s ease;
+
+    &.is-visible {
+      max-height: 600px;
+      opacity: 1;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: $space-md;
+
+      @media (max-width: $bp-md) {
+        grid-template-columns: 1fr;
+      }
+
+      .full-width { grid-column: 1 / -1; }
+    }
+  }
+
+  // ── Store Pickup Info (slides in when pickup selected) ─────
+  &__pickup-info {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.4s ease, opacity 0.3s ease;
+
+    &.is-visible {
+      max-height: 300px;
+      opacity: 1;
+    }
+
+    .pickup-location {
+      display: flex;
+      gap: $space-md;
+      padding: $space-lg;
+      background: rgba(6,182,212,0.06);
+      border: 1px solid rgba(6,182,212,0.2);
+      border-radius: $radius-md;
+      align-items: flex-start;
+      margin-top: $space-lg;
+
+      .map-pin {
+        font-size: 1.5rem;
+        flex-shrink: 0;
+        color: $color-accent;
+      }
+
+      .location-info {
+        h4 {
+          font-size: 0.95rem;
+          font-weight: 600;
+          color: $color-text-primary;
+          margin-bottom: $space-xs;
+        }
+
+        p {
+          font-size: 0.85rem;
+          color: $color-text-secondary;
+          margin: 0;
+          line-height: 1.5;
+        }
+
+        .hours {
+          display: flex;
+          gap: $space-sm;
+          flex-wrap: wrap;
+          margin-top: $space-sm;
+
+          .day-hours {
+            font-size: 0.78rem;
+            padding: 3px 10px;
+            background: rgba(6,182,212,0.1);
+            border: 1px solid rgba(6,182,212,0.2);
+            border-radius: $radius-pill;
+            color: $color-accent-light;
+          }
+        }
+      }
+    }
+  }
+
+  // ── Order Summary Sidebar ─────────────────────────────────
+  &__sidebar {
+    height: fit-content;
+    position: sticky;
+    top: $space-lg;
+    display: flex;
+    flex-direction: column;
+    gap: $space-md;
+  }
+
+  .order-summary {
+    @include glass-card;
+    padding: $space-xl;
+
+    &__title {
+      font-family: $font-heading;
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: $space-lg;
+      padding-bottom: $space-md;
+      border-bottom: 1px solid $glass-border;
+    }
+
+    &__items {
+      display: flex;
+      flex-direction: column;
+      gap: $space-md;
+      margin-bottom: $space-lg;
+    }
+
+    .summary-item {
+      display: flex;
+      gap: $space-md;
+
+      &__img {
+        width: 60px;
+        height: 60px;
+        border-radius: $radius-md;
+        object-fit: cover;
+        background: $color-bg-elevated;
+        flex-shrink: 0;
+      }
+
+      &__info {
+        flex: 1;
+
+        .item-name {
+          font-size: 0.875rem;
+          font-weight: 500;
+          color: $color-text-primary;
+          line-height: 1.3;
+          margin-bottom: 4px;
+        }
+
+        .item-period {
+          font-size: 0.78rem;
+          color: $color-text-muted;
+        }
+      }
+
+      &__price {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: $color-text-primary;
+        flex-shrink: 0;
+      }
+    }
+
+    // ── Deposit Breakdown Box ──────────────────────────────
+    .deposit-breakdown {
+      background: linear-gradient(135deg, rgba(245,158,11,0.08) 0%, rgba(245,158,11,0.04) 100%);
+      border: 1px solid rgba(245,158,11,0.25);
+      border-radius: $radius-md;
+      padding: $space-md;
+      margin-bottom: $space-md;
+
+      &__header {
+        display: flex;
+        align-items: center;
+        gap: $space-sm;
+        margin-bottom: $space-sm;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #FCD34D;
+
+        .shield-icon { font-size: 1rem; }
+      }
+
+      &__row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 0;
+        font-size: 0.82rem;
+
+        .row-label { color: $color-text-secondary; }
+        .row-value { color: $color-text-primary; font-weight: 500; }
+
+        &.highlight {
+          .row-label { color: #FCD34D; font-weight: 600; }
+          .row-value { color: #FCD34D; font-weight: 700; }
+        }
+      }
+
+      &__note {
+        font-size: 0.72rem;
+        color: rgba(252,211,77,0.7);
+        margin-top: $space-sm;
+        line-height: 1.4;
+      }
+    }
+
+    // ── Price Rows ────────────────────────────────────────
+    .price-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      font-size: 0.875rem;
+      border-top: 1px solid $glass-border;
+
+      .label { color: $color-text-secondary; }
+      .value { color: $color-text-primary; font-weight: 500; }
+
+      &--total {
+        border-top: 2px solid $glass-border;
+        padding-top: $space-md;
+        margin-top: $space-sm;
+
+        .label {
+          font-family: $font-heading;
+          font-size: 1rem;
+          font-weight: 600;
+          color: $color-text-primary;
+        }
+
+        .value {
+          font-family: $font-heading;
+          font-size: 1.25rem;
+          font-weight: 700;
+          @include gradient-text;
+        }
+      }
+    }
+
+    .pay-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: $space-sm;
+      width: 100%;
+      padding: 16px;
+      margin-top: $space-lg;
+      border-radius: $radius-md;
+      background: $gradient-primary;
+      color: #fff;
+      border: none;
+      font-family: $font-body;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: $transition-spring;
+      box-shadow: 0 4px 20px $color-primary-glow;
+      letter-spacing: 0.02em;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px $color-primary-glow;
+      }
+
+      &:active { transform: translateY(0); }
+
+      .lock-icon { font-size: 0.875rem; }
+    }
+
+    .secure-note {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: $space-sm;
+      margin-top: $space-md;
+      font-size: 0.75rem;
+      color: $color-text-muted;
+
+      .shield { color: $color-success; }
+    }
+  }
+}
+
+// ── Keyframes ─────────────────────────────────────────────────
+@keyframes section-enter {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

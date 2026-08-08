@@ -1,0 +1,646 @@
+@import 'variables';
+
+// ============================================================
+// Product Browse — Catalog, Pricing, Rental Period Selector
+// ============================================================
+
+.omni-browse {
+  background: $color-bg-base;
+  min-height: 100vh;
+  font-family: $font-body;
+  color: $color-text-primary;
+
+  // ── Page Header ───────────────────────────────────────────
+  &__hero {
+    background: linear-gradient(180deg, rgba(124,58,237,0.12) 0%, transparent 100%);
+    border-bottom: 1px solid $glass-border;
+    padding: $space-2xl 0 $space-xl;
+
+    .hero-title {
+      font-family: $font-heading;
+      font-size: 2.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: $space-sm;
+
+      span { @include gradient-text; }
+    }
+
+    .hero-subtitle {
+      color: $color-text-secondary;
+      font-size: 1.1rem;
+    }
+  }
+
+  // ── Layout ────────────────────────────────────────────────
+  &__layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: $space-xl;
+    padding: $space-xl 0;
+    max-width: 1400px;
+    margin: 0 auto;
+
+    @media (max-width: $bp-lg) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  // ── Sidebar Filters ───────────────────────────────────────
+  &__sidebar {
+    @include glass-card;
+    padding: $space-lg;
+    height: fit-content;
+    position: sticky;
+    top: $space-lg;
+
+    .filter-section {
+      margin-bottom: $space-xl;
+
+      &:last-child { margin-bottom: 0; }
+
+      &__title {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: $color-text-muted;
+        font-weight: 600;
+        margin-bottom: $space-md;
+      }
+    }
+
+    // Category chips
+    .category-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: $space-sm;
+
+      .chip {
+        padding: 6px 14px;
+        border-radius: $radius-pill;
+        font-size: 0.8rem;
+        font-weight: 500;
+        cursor: pointer;
+        border: 1px solid $glass-border;
+        background: transparent;
+        color: $color-text-secondary;
+        transition: $transition-fast;
+
+        &:hover, &.active {
+          background: rgba(124,58,237,0.2);
+          border-color: $color-primary;
+          color: $color-primary-light;
+        }
+      }
+    }
+
+    // Price range slider
+    .price-range {
+      &__track {
+        position: relative;
+        height: 4px;
+        background: $glass-border;
+        border-radius: $radius-pill;
+        margin: $space-lg 0;
+
+        .track-fill {
+          position: absolute;
+          height: 100%;
+          background: $gradient-primary;
+          border-radius: $radius-pill;
+        }
+
+        .thumb {
+          position: absolute;
+          width: 18px;
+          height: 18px;
+          border-radius: 50%;
+          background: $color-primary;
+          border: 2px solid $color-bg-base;
+          top: 50%;
+          transform: translateY(-50%);
+          cursor: grab;
+          box-shadow: $shadow-glow-primary;
+          transition: $transition-fast;
+
+          &:hover { transform: translateY(-50%) scale(1.2); }
+        }
+      }
+
+      &__labels {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.8rem;
+        color: $color-text-secondary;
+      }
+    }
+
+    // Search input
+    .search-box {
+      position: relative;
+
+      input {
+        width: 100%;
+        padding: 10px 14px 10px 38px;
+        background: rgba(30,41,59,0.5);
+        border: 1px solid $glass-border;
+        border-radius: $radius-md;
+        color: $color-text-primary;
+        font-size: 0.875rem;
+        outline: none;
+
+        &:focus {
+          border-color: $color-primary;
+          box-shadow: 0 0 0 3px rgba(124,58,237,0.12);
+        }
+      }
+
+      .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: $color-text-muted;
+        font-size: 0.875rem;
+      }
+    }
+  }
+
+  // ── Product Grid ──────────────────────────────────────────
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: $space-lg;
+  }
+
+  // ── Product Card ──────────────────────────────────────────
+  .product-card {
+    @include glass-card;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    @include hover-lift;
+    @include animated-gradient-border;
+
+    &__image-wrap {
+      position: relative;
+      height: 220px;
+      overflow: hidden;
+      background: linear-gradient(135deg, rgba(124,58,237,0.08) 0%, rgba(6,182,212,0.05) 100%);
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+      }
+
+      &:hover img { transform: scale(1.05); }
+    }
+
+    &__badge {
+      position: absolute;
+      top: $space-md;
+      left: $space-md;
+      padding: 4px 12px;
+      border-radius: $radius-pill;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      z-index: 1;
+
+      &--available {
+        background: rgba(16,185,129,0.2);
+        border: 1px solid rgba(16,185,129,0.4);
+        color: #6EE7B7;
+      }
+
+      &--limited {
+        background: rgba(245,158,11,0.2);
+        border: 1px solid rgba(245,158,11,0.4);
+        color: #FCD34D;
+      }
+
+      &--unavailable {
+        background: rgba(239,68,68,0.2);
+        border: 1px solid rgba(239,68,68,0.4);
+        color: #FCA5A5;
+      }
+    }
+
+    &__wishlist {
+      position: absolute;
+      top: $space-md;
+      right: $space-md;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(10,15,30,0.7);
+      backdrop-filter: blur(8px);
+      border: 1px solid $glass-border;
+      @include flex-center;
+      cursor: pointer;
+      transition: $transition-fast;
+      font-size: 0.875rem;
+      color: $color-text-muted;
+      z-index: 1;
+
+      &:hover, &.active {
+        color: #EF4444;
+        border-color: rgba(239,68,68,0.4);
+        background: rgba(239,68,68,0.1);
+      }
+    }
+
+    &__body {
+      padding: $space-lg;
+    }
+
+    &__category {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: $color-accent;
+      font-weight: 600;
+      margin-bottom: $space-xs;
+    }
+
+    &__name {
+      font-family: $font-heading;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: $color-text-primary;
+      margin-bottom: $space-sm;
+      line-height: 1.3;
+    }
+
+    &__specs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: $space-md;
+
+      .spec-tag {
+        padding: 3px 10px;
+        background: rgba(30,41,59,0.8);
+        border: 1px solid $glass-border;
+        border-radius: $radius-pill;
+        font-size: 0.72rem;
+        color: $color-text-muted;
+      }
+    }
+
+    // Rental Period Selector
+    &__period {
+      margin-bottom: $space-md;
+
+      .period-label {
+        font-size: 0.78rem;
+        color: $color-text-muted;
+        margin-bottom: $space-sm;
+      }
+
+      .period-pills {
+        display: flex;
+        gap: $space-sm;
+        flex-wrap: wrap;
+
+        .pill {
+          padding: 6px 14px;
+          border-radius: $radius-pill;
+          font-size: 0.8rem;
+          font-weight: 500;
+          cursor: pointer;
+          border: 1px solid $glass-border;
+          background: transparent;
+          color: $color-text-secondary;
+          transition: $transition-fast;
+
+          &.active {
+            background: $gradient-primary;
+            border-color: transparent;
+            color: #fff;
+            box-shadow: 0 2px 12px $color-primary-glow;
+          }
+
+          &:not(.active):hover {
+            border-color: $color-primary;
+            color: $color-primary-light;
+          }
+        }
+      }
+    }
+
+    // Date Range Picker
+    &__dates {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: $space-sm;
+      margin-bottom: $space-md;
+
+      .date-input-wrap {
+        position: relative;
+
+        input {
+          width: 100%;
+          padding: 8px 12px 8px 32px;
+          background: rgba(30,41,59,0.6);
+          border: 1px solid $glass-border;
+          border-radius: $radius-md;
+          color: $color-text-primary;
+          font-size: 0.8rem;
+          outline: none;
+          transition: $transition-fast;
+
+          &:focus {
+            border-color: $color-primary;
+          }
+        }
+
+        .cal-icon {
+          position: absolute;
+          left: 10px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: $color-text-muted;
+          font-size: 0.75rem;
+        }
+      }
+    }
+
+    // Pricing
+    &__pricing {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: $space-md;
+
+      .price-group {
+        .price-label {
+          font-size: 0.72rem;
+          color: $color-text-muted;
+          margin-bottom: 2px;
+        }
+
+        .price-value {
+          font-family: $font-heading;
+          font-size: 1.5rem;
+          font-weight: 700;
+          @include gradient-text;
+          line-height: 1;
+        }
+
+        .price-unit {
+          font-size: 0.75rem;
+          color: $color-text-muted;
+        }
+
+        .deposit-note {
+          font-size: 0.72rem;
+          color: $color-warning;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          margin-top: 4px;
+        }
+      }
+
+      .price-total {
+        text-align: right;
+
+        .total-label {
+          font-size: 0.72rem;
+          color: $color-text-muted;
+        }
+
+        .total-value {
+          font-family: $font-heading;
+          font-size: 1rem;
+          font-weight: 600;
+          color: $color-text-primary;
+          transition: $transition-fast;
+
+          &.updating {
+            animation: price-update 0.3s ease;
+          }
+        }
+      }
+    }
+
+    // Add to Cart
+    &__actions {
+      display: flex;
+      gap: $space-sm;
+    }
+
+    &__cart-btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: $radius-md;
+      background: $gradient-primary;
+      color: #fff;
+      border: none;
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: $transition-spring;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: $space-sm;
+      box-shadow: 0 4px 15px $color-primary-glow;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px $color-primary-glow;
+      }
+
+      &:active { transform: translateY(0); }
+
+      &.added {
+        background: $gradient-success;
+        animation: btn-success-bounce 0.4s ease;
+      }
+    }
+
+    &__detail-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: $radius-md;
+      background: $glass-bg-light;
+      border: 1px solid $glass-border;
+      color: $color-text-secondary;
+      @include flex-center;
+      cursor: pointer;
+      transition: $transition-base;
+
+      &:hover {
+        background: rgba(6,182,212,0.15);
+        border-color: $color-accent;
+        color: $color-accent;
+      }
+    }
+  }
+
+  // ── Empty State ───────────────────────────────────────────
+  &__empty {
+    text-align: center;
+    padding: $space-3xl;
+    color: $color-text-muted;
+
+    .empty-icon {
+      font-size: 4rem;
+      margin-bottom: $space-lg;
+      opacity: 0.3;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      color: $color-text-secondary;
+      margin-bottom: $space-sm;
+    }
+  }
+
+  // ── Pagination ────────────────────────────────────────────
+  &__pagination {
+    display: flex;
+    justify-content: center;
+    gap: $space-sm;
+    margin-top: $space-2xl;
+
+    .page-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: $radius-md;
+      @include flex-center;
+      background: $glass-bg;
+      border: 1px solid $glass-border;
+      color: $color-text-secondary;
+      cursor: pointer;
+      transition: $transition-fast;
+      text-decoration: none;
+      font-size: 0.875rem;
+
+      &:hover {
+        border-color: $color-primary;
+        color: $color-primary-light;
+      }
+
+      &.active {
+        background: $gradient-primary;
+        border-color: transparent;
+        color: #fff;
+        box-shadow: 0 2px 12px $color-primary-glow;
+      }
+    }
+  }
+}
+
+// ── Mini Cart Drawer ──────────────────────────────────────────
+.omni-cart-drawer {
+  position: fixed;
+  right: 0;
+  top: 0;
+  height: 100vh;
+  width: 400px;
+  @include glass-card($blur: 30px, $bg: rgba(10,15,30,0.95));
+  border-radius: $radius-xl 0 0 $radius-xl;
+  border-right: none;
+  z-index: $z-modal;
+  transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  &.is-open { transform: translateX(0); }
+
+  &__header {
+    padding: $space-xl $space-lg;
+    border-bottom: 1px solid $glass-border;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    h3 {
+      font-family: $font-heading;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .close-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: $glass-bg-light;
+      border: 1px solid $glass-border;
+      @include flex-center;
+      cursor: pointer;
+      transition: $transition-fast;
+      font-size: 1rem;
+      color: $color-text-muted;
+
+      &:hover { color: $color-text-primary; }
+    }
+  }
+
+  &__body {
+    flex: 1;
+    overflow-y: auto;
+    padding: $space-lg;
+    display: flex;
+    flex-direction: column;
+    gap: $space-md;
+  }
+
+  &__footer {
+    padding: $space-lg;
+    border-top: 1px solid $glass-border;
+
+    .cart-total {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: $space-lg;
+      font-size: 1rem;
+
+      .label { color: $color-text-secondary; }
+      .value {
+        font-family: $font-heading;
+        font-weight: 700;
+        @include gradient-text;
+        font-size: 1.25rem;
+      }
+    }
+  }
+
+  &__overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    z-index: $z-modal - 1;
+    opacity: 0;
+    pointer-events: none;
+    transition: $transition-base;
+
+    &.is-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+}
+
+// ── Keyframes ─────────────────────────────────────────────────
+@keyframes price-update {
+  0%   { transform: scale(1); color: $color-accent; }
+  50%  { transform: scale(1.08); }
+  100% { transform: scale(1); color: $color-text-primary; }
+}
+
+@keyframes btn-success-bounce {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(0.95); }
+  70%  { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}

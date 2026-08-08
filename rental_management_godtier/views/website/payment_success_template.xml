@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <!-- ============================================================
+       Payment Success Template — /rental/payment/success
+       ============================================================ -->
+  <template id="omni_payment_success" name="OmniRent Pro — Payment Success" website="True">
+    <t t-call="website.layout">
+      <t t-set="pageName" t-value="'OmniRent Pro — Booking Confirmed!'"/>
+
+      <div class="o_rental_module" style="background:#050A15; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:48px 24px; font-family:'Inter',sans-serif; color:#F1F5F9;">
+
+        <!-- Confetti Canvas -->
+        <canvas id="confetti-canvas" style="position:fixed; inset:0; pointer-events:none; z-index:0;"></canvas>
+
+        <!-- Ambient glow -->
+        <div style="position:fixed; width:500px; height:500px; border-radius:50%; background:radial-gradient(circle,rgba(16,185,129,0.15) 0%,transparent 70%); top:-100px; left:50%; transform:translateX(-50%); pointer-events:none;"></div>
+
+        <div style="position:relative; z-index:1; width:100%; max-width:600px;">
+
+          <!-- Success Card -->
+          <div style="background:rgba(10,15,30,0.85); backdrop-filter:blur(24px); border:1px solid rgba(16,185,129,0.2); border-radius:24px; padding:48px 40px; text-align:center; box-shadow:0 25px 60px rgba(0,0,0,0.5), 0 0 40px rgba(16,185,129,0.1);">
+
+            <!-- Animated Checkmark -->
+            <div id="success-check-ring" style="width:100px; height:100px; margin:0 auto 32px; position:relative;">
+              <svg width="100" height="100" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(16,185,129,0.2)" stroke-width="4"/>
+                <circle cx="50" cy="50" r="45" fill="none" stroke="#10B981" stroke-width="4"
+                        stroke-dasharray="283" stroke-dashoffset="283"
+                        style="animation: draw-circle 0.8s ease forwards; transform-origin:center; transform:rotate(-90deg);"
+                        id="success-circle"/>
+                <path d="M30 52 L44 66 L70 38" fill="none" stroke="#10B981" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"
+                      stroke-dasharray="60" stroke-dashoffset="60"
+                      style="animation: draw-check 0.5s 0.7s ease forwards;"
+                      id="success-checkmark"/>
+              </svg>
+            </div>
+
+            <h1 style="font-family:'Space Grotesk',sans-serif; font-size:2rem; font-weight:700; margin-bottom:12px;">
+              Booking <span style="background:linear-gradient(135deg,#6EE7B7,#06B6D4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Confirmed!</span> 🎉
+            </h1>
+
+            <p style="color:#94A3B8; font-size:1rem; margin-bottom:32px; line-height:1.6;">
+              Your rental order has been successfully placed and confirmed. A confirmation email has been sent to <strong style="color:#A78BFA;"><t t-esc="order.partner_id.email"/></strong>.
+            </p>
+
+            <!-- Order Reference Box -->
+            <div style="background:rgba(30,41,59,0.6); border:1px solid rgba(148,163,184,0.1); border-radius:12px; padding:20px; margin-bottom:24px; text-align:left;">
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                <div>
+                  <div style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.1em; color:#94A3B8; margin-bottom:4px;">Order Reference</div>
+                  <div style="font-family:'JetBrains Mono',monospace; font-size:0.95rem; color:#A78BFA; font-weight:600;">
+                    <t t-esc="order.name"/>
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.1em; color:#94A3B8; margin-bottom:4px;">Booking Date</div>
+                  <div style="font-size:0.875rem; color:#F1F5F9; font-weight:500;">
+                    <t t-esc="order.date_order.strftime('%d %B, %Y')"/>
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.1em; color:#94A3B8; margin-bottom:4px;">Rental Period</div>
+                  <div style="font-size:0.875rem; color:#F1F5F9; font-weight:500;">
+                    <t t-esc="order.order_line and order.order_line[0].rental_start_date and order.order_line[0].rental_start_date.strftime('%b %d') or 'N/A'"/>
+                    →
+                    <t t-esc="order.order_line and order.order_line[0].rental_return_date and order.order_line[0].rental_return_date.strftime('%b %d, %Y') or 'N/A'"/>
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.1em; color:#94A3B8; margin-bottom:4px;">Total Paid</div>
+                  <div style="font-size:1rem; font-weight:700; background:linear-gradient(135deg,#A78BFA,#67E8F9); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">
+                    ₹<t t-esc="'%.0f' % order.amount_total"/>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Deposit Status -->
+              <div style="margin-top:16px; padding-top:16px; border-top:1px solid rgba(148,163,184,0.08);">
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                  <span style="font-size:0.85rem; color:#94A3B8;">🛡️ Security Deposit Status</span>
+                  <span style="padding:4px 14px; border-radius:999px; background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.25); color:#FCD34D; font-size:0.75rem; font-weight:700;">
+                    HELD — ₹<t t-esc="'%.0f' % (order.amount_total * 0.3)"/>
+                  </span>
+                </div>
+                <p style="font-size:0.75rem; color:#64748B; margin-top:8px; line-height:1.5;">
+                  Fully refunded within 5 business days after successful return in good condition.
+                </p>
+              </div>
+            </div>
+
+            <!-- Items Booked -->
+            <div style="text-align:left; margin-bottom:28px;">
+              <div style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.1em; color:#94A3B8; margin-bottom:12px;">Items Booked</div>
+              <t t-foreach="order.order_line" t-as="line">
+                <div style="display:flex; align-items:center; gap:12px; padding:12px; background:rgba(30,41,59,0.4); border-radius:10px; border:1px solid rgba(148,163,184,0.06); margin-bottom:8px;">
+                  <img t-att-src="'/web/image/product.product/%s/image_128' % line.product_id.id"
+                       style="width:48px; height:48px; border-radius:8px; object-fit:cover; background:#1E293B;"
+                       onerror="this.style.display='none'" alt=""/>
+                  <div style="flex:1;">
+                    <div style="font-size:0.875rem; font-weight:500; color:#F1F5F9;"><t t-esc="line.product_id.name"/></div>
+                    <div style="font-size:0.75rem; color:#94A3B8; margin-top:2px;">Qty: <t t-esc="line.product_uom_qty"/></div>
+                  </div>
+                  <div style="font-size:0.875rem; font-weight:600; color:#A78BFA;">₹<t t-esc="'%.0f' % line.price_subtotal"/></div>
+                </div>
+              </t>
+            </div>
+
+            <!-- Eco Impact Badge -->
+            <div style="background:linear-gradient(135deg,rgba(16,185,129,0.08),rgba(6,182,212,0.05)); border:1px solid rgba(16,185,129,0.2); border-radius:12px; padding:16px; margin-bottom:28px; display:flex; align-items:center; gap:12px;">
+              <span style="font-size:2rem;">🌱</span>
+              <div style="text-align:left;">
+                <div style="font-size:0.875rem; font-weight:600; color:#6EE7B7;">Eco Impact</div>
+                <div style="font-size:0.8rem; color:#94A3B8; margin-top:2px;">
+                  By renting instead of buying, you saved approximately <strong style="color:#6EE7B7;">12.4 kg CO₂e</strong> from manufacturing waste!
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <!-- Download Invoice -->
+              <a t-att-href="'/report/pdf/account.report_invoice/%s' % (order.invoice_ids and order.invoice_ids[0].id or order.id)"
+                 id="download-invoice-btn"
+                 style="display:flex; align-items:center; justify-content:center; gap:10px; padding:16px; border-radius:12px; background:linear-gradient(135deg,#7C3AED,#06B6D4); color:#fff; font-weight:700; font-size:0.95rem; text-decoration:none; box-shadow:0 4px 20px rgba(124,58,237,0.4); transition:all 0.25s ease;"
+                 onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 30px rgba(124,58,237,0.5)'"
+                 onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 20px rgba(124,58,237,0.4)'">
+                📄 Download Invoice (PDF)
+              </a>
+
+              <!-- View Rentals -->
+              <a href="/my/rentals"
+                 style="display:flex; align-items:center; justify-content:center; gap:10px; padding:14px; border-radius:12px; background:rgba(30,41,59,0.5); border:1px solid rgba(148,163,184,0.12); color:#94A3B8; font-weight:500; font-size:0.9rem; text-decoration:none; transition:all 0.2s ease;"
+                 onmouseover="this.style.borderColor='rgba(124,58,237,0.4)'; this.style.color='#A78BFA'"
+                 onmouseout="this.style.borderColor='rgba(148,163,184,0.12)'; this.style.color='#94A3B8'">
+                📋 View My Rentals
+              </a>
+
+              <!-- Continue Browsing -->
+              <a href="/rental"
+                 style="font-size:0.85rem; color:#64748B; text-align:center; text-decoration:none; padding:8px;"
+                 onmouseover="this.style.color='#A78BFA'"
+                 onmouseout="this.style.color='#64748B'">
+                ← Continue Browsing
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inline animation styles -->
+        <style>
+          @keyframes draw-circle {
+            to { stroke-dashoffset: 0; }
+          }
+          @keyframes draw-check {
+            to { stroke-dashoffset: 0; }
+          }
+        </style>
+
+        <!-- Confetti script -->
+        <script>
+          // Simple confetti burst on load
+          (function () {
+            const canvas = document.getElementById('confetti-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            canvas.width  = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const colors = ['#7C3AED', '#06B6D4', '#10B981', '#F59E0B', '#A78BFA', '#67E8F9'];
+            const pieces = Array.from({length: 80}, () => ({
+              x:    Math.random() * canvas.width,
+              y:    Math.random() * canvas.height - canvas.height,
+              r:    Math.random() * 6 + 3,
+              d:    Math.random() * 80 + 20,
+              color: colors[Math.floor(Math.random() * colors.length)],
+              tilt: Math.random() * 10 - 10,
+              tiltAngle: 0,
+              tiltInc: Math.random() * 0.07 + 0.05,
+              vx: Math.random() * 2 - 1,
+              vy: Math.random() * 3 + 1,
+            }));
+
+            let frame = 0;
+            function draw() {
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+              pieces.forEach(p => {
+                p.y += p.vy;
+                p.x += p.vx + Math.sin(frame * 0.02) * 0.5;
+                p.tiltAngle += p.tiltInc;
+                p.tilt = Math.sin(p.tiltAngle) * 12;
+
+                ctx.beginPath();
+                ctx.lineWidth = p.r;
+                ctx.strokeStyle = p.color;
+                ctx.moveTo(p.x + p.tilt + p.r / 4, p.y);
+                ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 4);
+                ctx.stroke();
+
+                if (p.y > canvas.height + 10) {
+                  p.y = -10;
+                  p.x = Math.random() * canvas.width;
+                }
+              });
+              frame++;
+              if (frame &lt; 300) requestAnimationFrame(draw);
+              else ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+            setTimeout(draw, 200);
+          })();
+        </script>
+      </div>
+    </t>
+  </template>
+</odoo>

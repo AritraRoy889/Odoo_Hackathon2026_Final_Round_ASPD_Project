@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <!-- ============================================================
+       Product Browse Template — /rental
+       ============================================================ -->
+  <template id="omni_product_browse" name="OmniRent Pro — Browse Products" website="True">
+    <t t-call="website.layout">
+      <t t-set="pageName" t-value="'OmniRent Pro — Browse Hardware'"/>
+
+      <div class="omni-browse o_rental_module">
+
+        <!-- Hero Banner -->
+        <div class="omni-browse__hero">
+          <div class="container">
+            <h1 class="hero-title">Rent Premium <span>Hardware</span></h1>
+            <p class="hero-subtitle">Access enterprise-grade tech without the commitment. Pay only for the time you need.</p>
+          </div>
+        </div>
+
+        <div class="container">
+          <div class="omni-browse__layout">
+
+            <!-- ── Sidebar Filters ───────────────────────────── -->
+            <aside class="omni-browse__sidebar">
+
+              <!-- Search -->
+              <div class="filter-section">
+                <div class="search-box">
+                  <span class="search-icon">🔍</span>
+                  <input
+                    type="text"
+                    id="product-search"
+                    placeholder="Search hardware..."
+                    oninput="omniProductBrowse.filterProducts(this.value)"/>
+                </div>
+              </div>
+
+              <!-- Category -->
+              <div class="filter-section">
+                <div class="filter-section__title">Category</div>
+                <div class="category-chips" id="category-chips">
+                  <span class="chip active" data-cat="all" onclick="omniProductBrowse.setCategory(this, 'all')">All</span>
+                  <span class="chip" data-cat="compute" onclick="omniProductBrowse.setCategory(this, 'compute')">🖥️ AI Compute</span>
+                  <span class="chip" data-cat="camera" onclick="omniProductBrowse.setCategory(this, 'camera')">🎬 Cameras</span>
+                  <span class="chip" data-cat="vr" onclick="omniProductBrowse.setCategory(this, 'vr')">🥽 VR / AR</span>
+                  <span class="chip" data-cat="drone" onclick="omniProductBrowse.setCategory(this, 'drone')">🚁 Drones</span>
+                  <span class="chip" data-cat="workstation" onclick="omniProductBrowse.setCategory(this, 'workstation')">💻 Workstations</span>
+                </div>
+              </div>
+
+              <!-- Rental Duration -->
+              <div class="filter-section">
+                <div class="filter-section__title">Duration Filter</div>
+                <div class="category-chips">
+                  <span class="chip" onclick="omniProductBrowse.setDuration('hourly')">Hourly</span>
+                  <span class="chip" onclick="omniProductBrowse.setDuration('daily')">Daily</span>
+                  <span class="chip" onclick="omniProductBrowse.setDuration('weekly')">Weekly</span>
+                  <span class="chip" onclick="omniProductBrowse.setDuration('monthly')">Monthly</span>
+                </div>
+              </div>
+
+              <!-- Price Range -->
+              <div class="filter-section">
+                <div class="filter-section__title">Daily Rate Range</div>
+                <div class="price-range">
+                  <div class="price-range__track" id="price-track">
+                    <div class="track-fill" id="price-fill" style="left:0%; width:100%;"></div>
+                    <div class="thumb" id="price-thumb-min" style="left:0%;"></div>
+                    <div class="thumb" id="price-thumb-max" style="left:100%;"></div>
+                  </div>
+                  <div class="price-range__labels">
+                    <span id="price-min-label">₹0</span>
+                    <span id="price-max-label">₹50,000+</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Availability -->
+              <div class="filter-section">
+                <div class="filter-section__title">Availability</div>
+                <label style="display:flex; align-items:center; gap:10px; color:#94A3B8; font-size:0.875rem; cursor:pointer;">
+                  <input type="checkbox" id="only-available" style="accent-color:#7C3AED;" onchange="omniProductBrowse.toggleAvailable(this.checked)"/>
+                  Show available only
+                </label>
+              </div>
+            </aside>
+
+            <!-- ── Product Grid ─────────────────────────────── -->
+            <main>
+              <!-- Toolbar -->
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+                <p style="color:#94A3B8; font-size:0.875rem;">
+                  Showing <strong id="product-count" style="color:#F1F5F9;"><t t-esc="len(products)"/></strong> products
+                </p>
+                <select id="sort-select" style="background:#0F172A; border:1px solid rgba(148,163,184,0.12); border-radius:8px; padding:8px 14px; color:#94A3B8; font-size:0.875rem;" onchange="omniProductBrowse.sortProducts(this.value)">
+                  <option value="popular">Most Popular</option>
+                  <option value="price_asc">Price: Low → High</option>
+                  <option value="price_desc">Price: High → Low</option>
+                  <option value="newest">Newest First</option>
+                </select>
+              </div>
+
+              <div class="omni-browse__grid" id="product-grid">
+                <t t-foreach="products" t-as="product">
+                  <div class="product-card"
+                       t-att-data-category="product.categ_id.name.lower()"
+                       t-att-data-price="product.rental_pricing_ids and product.rental_pricing_ids[0].price or 0"
+                       t-att-data-product-id="product.id">
+
+                    <!-- Product Image -->
+                    <div class="product-card__image-wrap">
+                      <t t-if="product.image_1920">
+                        <img t-att-src="'/web/image/product.product/%s/image_1920' % product.id"
+                             t-att-alt="product.name" loading="lazy"/>
+                      </t>
+                      <t t-else="">
+                        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:4rem;background:linear-gradient(135deg,rgba(124,58,237,0.1),rgba(6,182,212,0.05));">
+                          🖥️
+                        </div>
+                      </t>
+
+                      <!-- Availability Badge -->
+                      <span t-attf-class="product-card__badge product-card__badge--#{product.rental_qty_available > 5 and 'available' or (product.rental_qty_available > 0 and 'limited' or 'unavailable')}">
+                        <t t-if="product.rental_qty_available > 5">✓ Available</t>
+                        <t t-elif="product.rental_qty_available > 0">⚡ Limited (<t t-esc="product.rental_qty_available"/> left)</t>
+                        <t t-else="">✗ Unavailable</t>
+                      </span>
+
+                      <!-- Wishlist -->
+                      <div class="product-card__wishlist" t-att-data-product-id="product.id" onclick="omniProductBrowse.toggleWishlist(this)">♡</div>
+                    </div>
+
+                    <!-- Card Body -->
+                    <div class="product-card__body">
+                      <div class="product-card__category"><t t-esc="product.categ_id.name"/></div>
+                      <h3 class="product-card__name"><t t-esc="product.name"/></h3>
+
+                      <!-- Specs Tags -->
+                      <div class="product-card__specs">
+                        <t t-if="product.description_sale">
+                          <t t-foreach="product.description_sale.split(',')[:4]" t-as="spec">
+                            <span class="spec-tag"><t t-esc="spec.strip()"/></span>
+                          </t>
+                        </t>
+                      </div>
+
+                      <!-- Rental Period Pills -->
+                      <div class="product-card__period">
+                        <div class="period-label">Rental Period</div>
+                        <div class="period-pills">
+                          <span class="pill active" data-unit="hour" t-att-data-product-id="product.id" onclick="omniProductBrowse.selectPeriod(this)">Hourly</span>
+                          <span class="pill" data-unit="day" t-att-data-product-id="product.id" onclick="omniProductBrowse.selectPeriod(this)">Daily</span>
+                          <span class="pill" data-unit="week" t-att-data-product-id="product.id" onclick="omniProductBrowse.selectPeriod(this)">Weekly</span>
+                          <span class="pill" data-unit="month" t-att-data-product-id="product.id" onclick="omniProductBrowse.selectPeriod(this)">Monthly</span>
+                        </div>
+                      </div>
+
+                      <!-- Date Range -->
+                      <div class="product-card__dates">
+                        <div class="date-input-wrap">
+                          <span class="cal-icon">📅</span>
+                          <input type="date" t-attf-id="start-date-#{product.id}" class="omni-date-start" placeholder="Start date"
+                                 t-att-data-product-id="product.id" onchange="omniProductBrowse.onDateChange(this)"/>
+                        </div>
+                        <div class="date-input-wrap">
+                          <span class="cal-icon">📅</span>
+                          <input type="date" t-attf-id="end-date-#{product.id}" class="omni-date-end" placeholder="End date"
+                                 t-att-data-product-id="product.id" onchange="omniProductBrowse.onDateChange(this)"/>
+                        </div>
+                      </div>
+
+                      <!-- Pricing -->
+                      <div class="product-card__pricing">
+                        <div class="price-group">
+                          <div class="price-label">From</div>
+                          <div class="price-value" t-attf-id="price-display-#{product.id}">
+                            ₹<t t-esc="'%.0f' % (product.rental_pricing_ids and product.rental_pricing_ids[0].price or 0)"/>
+                          </div>
+                          <div class="price-unit">/ day</div>
+                          <div class="deposit-note">
+                            🛡️ Deposit: ₹<span t-attf-id="deposit-display-#{product.id}"><t t-esc="'%.0f' % (product.extra_hourly * 100 or 5000)"/></span>
+                          </div>
+                        </div>
+                        <div class="price-total">
+                          <div class="total-label">Total</div>
+                          <div class="total-value" t-attf-id="total-display-#{product.id}">—</div>
+                        </div>
+                      </div>
+
+                      <!-- Actions -->
+                      <div class="product-card__actions">
+                        <button class="product-card__cart-btn"
+                                t-att-data-product-id="product.id"
+                                onclick="omniProductBrowse.addToCart(this)">
+                          <span>🛒</span> Add to Cart
+                        </button>
+                        <a t-attf-href="/rental/product/#{product.id}" class="product-card__detail-btn" title="View Details">
+                          →
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </t>
+
+                <!-- Empty State -->
+                <t t-if="not products">
+                  <div class="omni-browse__empty" style="grid-column:1/-1;">
+                    <div class="empty-icon">🔍</div>
+                    <h3>No products found</h3>
+                    <p>Try adjusting your filters or search term.</p>
+                  </div>
+                </t>
+              </div>
+
+              <!-- Pagination -->
+              <div class="omni-browse__pagination">
+                <t t-if="pager">
+                  <t t-foreach="pager['pages']" t-as="page">
+                    <a t-att-href="page['url']"
+                       t-attf-class="page-btn #{page['num'] == pager['page']['num'] and 'active' or ''}">
+                      <t t-esc="page['num']"/>
+                    </a>
+                  </t>
+                </t>
+              </div>
+            </main>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cart Drawer -->
+      <div class="omni-cart-drawer" id="cart-drawer">
+        <div class="omni-cart-drawer__header">
+          <h3>🛒 Your Cart</h3>
+          <div class="close-btn" onclick="omniProductBrowse.closeCart()">✕</div>
+        </div>
+        <div class="omni-cart-drawer__body" id="cart-items-container">
+          <p style="color:#94A3B8; text-align:center; padding:40px 0;">Your cart is empty</p>
+        </div>
+        <div class="omni-cart-drawer__footer">
+          <div class="cart-total">
+            <span class="label">Subtotal</span>
+            <span class="value" id="cart-subtotal">₹0</span>
+          </div>
+          <a href="/rental/checkout" class="omni-btn omni-btn--primary" style="width:100%; justify-content:center;">
+            Proceed to Checkout →
+          </a>
+        </div>
+      </div>
+      <div class="omni-cart-drawer__overlay" id="cart-overlay" onclick="omniProductBrowse.closeCart()"></div>
+    </t>
+  </template>
+</odoo>

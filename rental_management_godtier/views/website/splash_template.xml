@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <!-- ============================================================
+       Splash Screen Template — OmniRent Pro Entry Page
+       Route: /rental or /
+       ============================================================ -->
+  <template id="omni_splash" name="OmniRent Pro — Splash Screen">
+    <t t-call="website.layout">
+      <t t-set="no_header" t-value="True"/>
+      <t t-set="no_footer" t-value="True"/>
+
+      <div id="omni-splash" class="omni-splash">
+        <!-- Particle Canvas -->
+        <canvas id="omni-particle-canvas" class="omni-splash__canvas"></canvas>
+
+        <!-- Ambient Orbs -->
+        <div class="omni-splash__orb omni-splash__orb--1"></div>
+        <div class="omni-splash__orb omni-splash__orb--2"></div>
+        <div class="omni-splash__orb omni-splash__orb--3"></div>
+
+        <!-- Central Content -->
+        <div class="omni-splash__content">
+          <!-- Logo Ring -->
+          <div class="omni-splash__logo-ring">
+            <div class="omni-icon">⬡</div>
+          </div>
+
+          <!-- Brand Name -->
+          <h1 class="omni-splash__brand">
+            Omni<span>Rent</span> Pro
+          </h1>
+          <p class="omni-splash__tagline">Enterprise Hardware Rental Platform</p>
+
+          <!-- Loading Bar -->
+          <div class="omni-splash__loader">
+            <div class="omni-splash__loader-bar" id="omni-loader-bar"></div>
+          </div>
+
+          <!-- Status -->
+          <p class="omni-splash__status" id="omni-status-text">
+            Initializing systems...
+          </p>
+
+          <!-- CTA Buttons (appear after loading) -->
+          <div class="omni-splash__cta" id="omni-splash-cta">
+            <a href="/web/login" class="omni-btn omni-btn--primary omni-btn--lg">
+              <span>⚡</span> Sign In
+            </a>
+            <a href="/rental/register" class="omni-btn omni-btn--outline omni-btn--lg">
+              <span>🚀</span> Get Started
+            </a>
+          </div>
+
+          <!-- Feature Highlights -->
+          <div class="omni-splash__features" id="omni-features">
+            <div class="feature-chip">🖥️ AI Compute Rigs</div>
+            <div class="feature-chip">🎬 Cinema Cameras</div>
+            <div class="feature-chip">🥽 VR / AR Headsets</div>
+            <div class="feature-chip">🚁 Drone Fleets</div>
+          </div>
+        </div>
+
+        <!-- Bottom Bar (terms / version) -->
+        <div class="omni-splash__bottom-bar">
+          <span class="version-tag">v1.0.0 — Odoo 17</span>
+          <span class="separator">•</span>
+          <a href="/rental/terms" class="policy-link">Terms &amp; Conditions</a>
+          <span class="separator">•</span>
+          <a href="/rental/privacy" class="policy-link">Privacy Policy</a>
+        </div>
+      </div>
+
+      <!-- Inline critical styles to avoid flash -->
+      <style>
+        body { margin: 0; background: #050A15; overflow: hidden; }
+        .omni-splash { position: fixed; inset: 0; }
+        .omni-splash__features { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 24px; }
+        .feature-chip {
+          padding: 6px 16px;
+          border-radius: 999px;
+          background: rgba(124,58,237,0.08);
+          border: 1px solid rgba(124,58,237,0.2);
+          font-size: 0.8rem;
+          color: rgba(241,245,249,0.6);
+        }
+        .omni-splash__bottom-bar {
+          position: fixed;
+          bottom: 24px;
+          left: 50%;
+          transform: translateX(-50%);
+          display: flex;
+          gap: 12px;
+          align-items: center;
+          font-size: 0.75rem;
+          color: rgba(148,163,184,0.5);
+          z-index: 10000;
+        }
+        .version-tag { font-family: monospace; }
+        .policy-link { color: rgba(148,163,184,0.5); text-decoration: none; }
+        .policy-link:hover { color: rgba(167,139,250,0.9); }
+        .separator { opacity: 0.4; }
+      </style>
+    </t>
+  </template>
+</odoo>

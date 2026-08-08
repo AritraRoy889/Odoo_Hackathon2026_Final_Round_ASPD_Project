@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <!-- ============================================================
+       Auth Templates — Login, Register, Profile Creation
+       ============================================================ -->
+
+  <!-- ── LOGIN ──────────────────────────────────────────────────── -->
+  <template id="omni_login" name="OmniRent Pro — Login" inherit_id="web.login" primary="True">
+    <xpath expr="//div[hasclass('oe_login_form')]" position="replace">
+      <div class="omni-auth">
+        <div class="omni-auth__card">
+          <!-- Logo -->
+          <div class="omni-auth__logo">
+            <div class="logo-mark">⬡</div>
+          </div>
+
+          <h1 class="omni-auth__title">Welcome <span>Back</span></h1>
+          <p class="omni-auth__subtitle">Sign in to access the OmniRent Pro portal and manage your rentals.</p>
+
+          <!-- Error/Success Alert -->
+          <t t-if="error">
+            <div class="omni-auth__alert omni-auth__alert--error">
+              <span>⚠️</span>
+              <t t-esc="error"/>
+            </div>
+          </t>
+
+          <!-- Login Form -->
+          <form class="omni-auth__form" action="/web/login" method="post" id="omni-login-form">
+            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+
+            <div class="omni-field">
+              <input
+                type="email"
+                id="login-email"
+                name="login"
+                class="omni-field__input"
+                placeholder=" "
+                required="1"
+                t-att-value="login"
+                autocomplete="username email"/>
+              <label for="login-email" class="omni-field__label">Email Address</label>
+              <span class="omni-field__icon">✉️</span>
+            </div>
+
+            <div class="omni-field">
+              <input
+                type="password"
+                id="login-password"
+                name="password"
+                class="omni-field__input"
+                placeholder=" "
+                required="1"
+                autocomplete="current-password"/>
+              <label for="login-password" class="omni-field__label">Password</label>
+              <span class="omni-field__icon" id="toggle-password" onclick="togglePasswordVisibility('login-password')">👁️</span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <label style="display:flex; gap:8px; align-items:center; font-size:0.85rem; color:#94A3B8; cursor:pointer;">
+                <input type="checkbox" name="remember" style="accent-color:#7C3AED;"/> Remember me
+              </label>
+              <a href="/web/reset_password" style="font-size:0.85rem; color:#A78BFA; text-decoration:none;">Forgot password?</a>
+            </div>
+
+            <button type="submit" id="submit-login" class="omni-btn omni-btn--primary" style="width:100%; justify-content:center; margin-top:8px;">
+              Sign In →
+            </button>
+          </form>
+
+          <!-- Divider -->
+          <div class="omni-auth__divider">
+            <span>or continue with</span>
+          </div>
+
+          <!-- SSO Placeholder -->
+          <a href="#" class="omni-auth__sso-btn" id="google-sso-btn">
+            <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/><path fill="#FF3D00" d="m6.306 14.691 6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/><path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0 1 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/></svg>
+            Sign in with Google (SSO)
+          </a>
+
+          <!-- Footer -->
+          <p class="omni-auth__footer">
+            Don't have an account? <a href="/rental/register">Create one →</a>
+          </p>
+        </div>
+      </div>
+    </xpath>
+  </template>
+
+  <!-- ── REGISTER ───────────────────────────────────────────────── -->
+  <template id="omni_register" name="OmniRent Pro — Register" website="True">
+    <t t-call="website.layout">
+      <t t-set="no_header" t-value="True"/>
+
+      <div class="omni-auth">
+        <div class="omni-auth__card" style="max-width: 500px;">
+          <!-- Logo -->
+          <div class="omni-auth__logo">
+            <div class="logo-mark">⬡</div>
+          </div>
+
+          <h1 class="omni-auth__title">Create <span>Account</span></h1>
+          <p class="omni-auth__subtitle">Join thousands of professionals renting premium tech hardware.</p>
+
+          <!-- Step Indicator -->
+          <div class="omni-auth__steps" id="register-steps">
+            <div class="step step--active" data-step="1">
+              <div class="step__dot">1</div>
+              <div class="step__label">Account</div>
+            </div>
+            <div class="step step--connector"></div>
+            <div class="step" data-step="2">
+              <div class="step__dot">2</div>
+              <div class="step__label">Profile</div>
+            </div>
+            <div class="step step--connector"></div>
+            <div class="step" data-step="3">
+              <div class="step__dot">3</div>
+              <div class="step__label">Verify</div>
+            </div>
+          </div>
+
+          <!-- Error Alert -->
+          <t t-if="error">
+            <div class="omni-auth__alert omni-auth__alert--error">
+              <span>⚠️</span> <t t-esc="error"/>
+            </div>
+          </t>
+
+          <!-- STEP 1: Account Info -->
+          <form class="omni-auth__form" id="register-step-1" action="/rental/register" method="post">
+            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+
+            <div class="omni-field">
+              <input type="text" id="reg-name" name="name" class="omni-field__input" placeholder=" " required="1"/>
+              <label for="reg-name" class="omni-field__label">Full Name</label>
+              <span class="omni-field__icon">👤</span>
+            </div>
+
+            <div class="omni-field">
+              <input type="email" id="reg-email" name="login" class="omni-field__input" placeholder=" " required="1"/>
+              <label for="reg-email" class="omni-field__label">Email Address</label>
+              <span class="omni-field__icon">✉️</span>
+            </div>
+
+            <div class="omni-field">
+              <input type="tel" id="reg-phone" name="phone" class="omni-field__input" placeholder=" "/>
+              <label for="reg-phone" class="omni-field__label">Phone Number</label>
+              <span class="omni-field__icon">📱</span>
+            </div>
+
+            <div class="omni-field">
+              <input type="password" id="reg-password" name="password" class="omni-field__input" placeholder=" " required="1"/>
+              <label for="reg-password" class="omni-field__label">Password</label>
+              <span class="omni-field__icon" onclick="togglePasswordVisibility('reg-password')">👁️</span>
+            </div>
+
+            <div class="omni-field">
+              <input type="password" id="reg-confirm" name="confirm_password" class="omni-field__input" placeholder=" " required="1"/>
+              <label for="reg-confirm" class="omni-field__label">Confirm Password</label>
+            </div>
+
+            <label style="display:flex; gap:10px; align-items:flex-start; font-size:0.82rem; color:#94A3B8; margin-top:8px; cursor:pointer; line-height:1.5;">
+              <input type="checkbox" name="agree_terms" required="1" style="margin-top:3px; accent-color:#7C3AED; flex-shrink:0;"/>
+              I agree to the <a href="/rental/terms" style="color:#A78BFA;">Terms of Service</a> and <a href="/rental/privacy" style="color:#A78BFA;">Privacy Policy</a>
+            </label>
+
+            <button type="submit" class="omni-btn omni-btn--primary" style="width:100%; justify-content:center; margin-top:16px;">
+              Create Account →
+            </button>
+          </form>
+
+          <p class="omni-auth__footer">
+            Already have an account? <a href="/web/login">Sign in →</a>
+          </p>
+        </div>
+      </div>
+    </t>
+  </template>
+
+  <!-- ── PROFILE CREATION (Step 2 after register) ───────────────── -->
+  <template id="omni_profile_setup" name="OmniRent Pro — Profile Setup" website="True">
+    <t t-call="website.layout">
+      <t t-set="no_header" t-value="True"/>
+
+      <div class="omni-auth">
+        <div class="omni-auth__card" style="max-width: 500px;">
+          <div class="omni-auth__logo">
+            <div class="logo-mark">⬡</div>
+          </div>
+
+          <h1 class="omni-auth__title">Complete <span>Profile</span></h1>
+          <p class="omni-auth__subtitle">Help us personalize your rental experience with a few details.</p>
+
+          <!-- Avatar Upload -->
+          <div class="omni-auth__avatar-upload">
+            <div class="avatar-ring" id="avatar-ring" onclick="document.getElementById('avatar-file-input').click()">
+              <div class="avatar-ring__preview">
+                <img id="avatar-preview" src="" alt="Avatar" style="display:none;"/>
+                <span class="avatar-placeholder" id="avatar-placeholder">👤</span>
+              </div>
+              <div class="avatar-ring__overlay">📷</div>
+              <input type="file" id="avatar-file-input" accept="image/*" onchange="previewAvatar(event)"/>
+            </div>
+            <p class="upload-hint">Click to upload profile photo (optional)</p>
+          </div>
+
+          <form class="omni-auth__form" action="/rental/profile/save" method="post" id="profile-form" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+            <input type="hidden" name="avatar_data" id="avatar-data-input"/>
+
+            <div class="omni-field">
+              <input type="text" id="profile-display-name" name="display_name" class="omni-field__input" placeholder=" " t-att-value="user.name"/>
+              <label for="profile-display-name" class="omni-field__label">Display Name</label>
+              <span class="omni-field__icon">✏️</span>
+            </div>
+
+            <div class="omni-field">
+              <input type="text" id="profile-company" name="company_name" class="omni-field__input" placeholder=" "/>
+              <label for="profile-company" class="omni-field__label">Company / Organization (optional)</label>
+              <span class="omni-field__icon">🏢</span>
+            </div>
+
+            <div class="omni-field">
+              <select id="profile-industry" name="industry" class="omni-field__input" style="padding-top:14px;">
+                <option value="">Select your industry...</option>
+                <option value="tech">Technology</option>
+                <option value="media">Film &amp; Media Production</option>
+                <option value="research">Research &amp; Academia</option>
+                <option value="events">Events &amp; Entertainment</option>
+                <option value="healthcare">Healthcare</option>
+                <option value="other">Other</option>
+              </select>
+              <label for="profile-industry" class="omni-field__label" style="top:10px; font-size:0.75rem; color:#A78BFA;">Industry</label>
+            </div>
+
+            <div class="omni-field">
+              <textarea id="profile-bio" name="bio" class="omni-field__input" placeholder=" " rows="3" style="padding-top:20px; resize:none;"></textarea>
+              <label for="profile-bio" class="omni-field__label">Short Bio (optional)</label>
+            </div>
+
+            <div style="display:flex; gap:12px; margin-top:16px;">
+              <a href="/my/rentals" class="omni-btn omni-btn--ghost" style="flex:1; justify-content:center;">Skip for now</a>
+              <button type="submit" class="omni-btn omni-btn--primary" style="flex:2; justify-content:center;">
+                Complete Setup ✓
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </t>
+  </template>
+</odoo>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <!-- ============================================================
+       Backend OWL Admin Dashboard — ir.actions.client + Menu
+       ============================================================ -->
+
+  <!-- Client Action -->
+  <record id="action_rental_dashboard" model="ir.actions.client">
+    <field name="name">OmniRent Pro Dashboard</field>
+    <field name="tag">rental_management_godtier.rental_dashboard</field>
+    <field name="target">main</field>
+  </record>
+
+  <!-- Top-level Menu: Rentals -->
+  <menuitem
+    id="menu_rental_root"
+    name="🏠 OmniRent Pro"
+    sequence="50"
+    web_icon="rental_management_godtier,static/src/img/icon.png"/>
+
+  <!-- Dashboard Submenu -->
+  <menuitem
+    id="menu_rental_dashboard"
+    name="📊 Live Dashboard"
+    parent="menu_rental_root"
+    action="action_rental_dashboard"
+    sequence="1"/>
+
+  <!-- Rental Orders Submenu -->
+  <menuitem
+    id="menu_rental_orders"
+    name="📦 Rental Orders"
+    parent="menu_rental_root"
+    sequence="2"
+    action="sale_renting.rental_order_action_main"/>
+
+  <!-- Products Submenu -->
+  <menuitem
+    id="menu_rental_products"
+    name="🖥️ Hardware Catalog"
+    parent="menu_rental_root"
+    sequence="3"
+    action="product.product_template_action_all"/>
+
+  <!-- Customers Submenu -->
+  <menuitem
+    id="menu_rental_customers"
+    name="👥 Customers"
+    parent="menu_rental_root"
+    sequence="4"
+    action="base.res_partner_action_supplier"/>
+
+  <!-- Reports Submenu -->
+  <menuitem
+    id="menu_rental_reports"
+    name="📈 Reports"
+    parent="menu_rental_root"
+    sequence="10"/>
+</odoo>

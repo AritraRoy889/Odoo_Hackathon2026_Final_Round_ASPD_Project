@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+
+  <!-- ============================================================
+       KPI Card Template
+       ============================================================ -->
+  <t t-name="rental_management_godtier.KpiCard">
+    <div t-att-class="cardClass" t-on-click="onClick">
+      <div class="kpi-card__header">
+        <div class="kpi-card__icon">
+          <t t-esc="props.icon"/>
+        </div>
+        <t t-if="props.trend !== null">
+          <div t-att-class="'kpi-card__trend ' + trendClass">
+            <span t-esc="trendIcon"/>
+            <span t-esc="trendText"/>
+          </div>
+        </t>
+      </div>
+      <div t-att-class="'kpi-card__value' + (state.isAnimating ? ' counting' : '')">
+        <t t-if="props.prefix"><t t-esc="props.prefix"/></t>
+        <t t-esc="formattedValue"/>
+        <t t-if="props.suffix"><t t-esc="props.suffix"/></t>
+      </div>
+      <div class="kpi-card__label"><t t-esc="props.title"/></div>
+    </div>
+  </t>
+
+  <!-- ============================================================
+       Rental Chart Template
+       ============================================================ -->
+  <t t-name="rental_management_godtier.RentalChart">
+    <div class="chart-card">
+      <div class="chart-card__header" t-if="props.title">
+        <h3><t t-esc="props.title"/></h3>
+      </div>
+      <div class="chart-card__canvas-wrap" t-att-style="'height:' + props.height + 'px'">
+        <canvas t-ref="chartCanvas"/>
+      </div>
+    </div>
+  </t>
+
+  <!-- ============================================================
+       Action Buttons Template
+       ============================================================ -->
+  <t t-name="rental_management_godtier.ActionButtons">
+    <div class="action-panel">
+      <div class="action-panel__title">
+        <span class="bolt-icon">⚡</span> Quick Actions
+      </div>
+      <div class="action-panel__actions">
+
+        <!-- Process Returns -->
+        <button
+          t-att-class="'action-btn action-btn--return' + (state.loading.return ? ' is-loading' : '')"
+          t-on-click="processReturns"
+          t-att-disabled="state.loading.return">
+          <div class="action-icon">
+            <t t-if="state.loading.return">⟳</t>
+            <t t-else="">↩️</t>
+          </div>
+          <div class="action-text">
+            <div class="action-name">Process Returns</div>
+            <div class="action-desc">View and confirm pending return orders</div>
+          </div>
+          <span class="action-count"><t t-esc="props.dueReturnCount"/></span>
+          <span class="action-arrow">→</span>
+        </button>
+
+        <!-- Send Overdue Reminders -->
+        <button
+          t-att-class="'action-btn action-btn--reminder' + (state.loading.reminder ? ' is-loading' : '')"
+          t-on-click="sendOverdueReminders"
+          t-att-disabled="state.loading.reminder">
+          <div class="action-icon">
+            <t t-if="state.loading.reminder">⟳</t>
+            <t t-else="">📨</t>
+          </div>
+          <div class="action-text">
+            <div class="action-name">Send Overdue Reminders</div>
+            <div class="action-desc">Email all customers with late returns</div>
+          </div>
+          <span class="action-count"><t t-esc="props.overdueCount"/></span>
+          <span class="action-arrow">→</span>
+        </button>
+
+        <!-- View Overdue Rentals -->
+        <button
+          t-att-class="'action-btn action-btn--overdue' + (state.loading.overdue ? ' is-loading' : '')"
+          t-on-click="viewOverdueRentals"
+          t-att-disabled="state.loading.overdue">
+          <div class="action-icon">
+            <t t-if="state.loading.overdue">⟳</t>
+            <t t-else="">⚠️</t>
+          </div>
+          <div class="action-text">
+            <div class="action-name">View Overdue Rentals</div>
+            <div class="action-desc">List all past-due rental contracts</div>
+          </div>
+          <span class="action-count"><t t-esc="props.overdueCount"/></span>
+          <span class="action-arrow">→</span>
+        </button>
+
+        <!-- Generate Invoices -->
+        <button
+          t-att-class="'action-btn action-btn--invoice' + (state.loading.invoice ? ' is-loading' : '')"
+          t-on-click="generateInvoices"
+          t-att-disabled="state.loading.invoice">
+          <div class="action-icon">
+            <t t-if="state.loading.invoice">⟳</t>
+            <t t-else="">📄</t>
+          </div>
+          <div class="action-text">
+            <div class="action-name">Generate Invoices</div>
+            <div class="action-desc">Create invoices for confirmed orders</div>
+          </div>
+          <span class="action-arrow">→</span>
+        </button>
+      </div>
+    </div>
+  </t>
+
+  <!-- ============================================================
+       Main Dashboard Template
+       ============================================================ -->
+  <t t-name="rental_management_godtier.RentalDashboard">
+    <div class="o_rental_dashboard">
+
+      <!-- ── Top Bar ────────────────────────────────────────── -->
+      <div class="dashboard-topbar">
+        <div class="topbar-left">
+          <h1 class="dash-title">OmniRent <span>Dashboard</span></h1>
+          <p class="dash-subtitle" t-if="state.lastUpdated">
+            Last updated: <t t-esc="state.lastUpdated"/>
+          </p>
+        </div>
+        <div class="topbar-right">
+          <!-- Live indicator -->
+          <div class="live-indicator">
+            <div class="live-dot"/>
+            LIVE
+          </div>
+
+          <!-- Period Filter -->
+          <div class="date-filter">
+            <t t-foreach="[['7d','7D'], ['30d','30D'], ['90d','90D'], ['year','1Y']]" t-as="period">
+              <button
+                t-att-class="'filter-btn' + (state.selectedPeriod === period[0] ? ' active' : '')"
+                t-on-click="() => selectPeriod(period[0])">
+                <t t-esc="period[1]"/>
+              </button>
+            </t>
+          </div>
+
+          <!-- Refresh -->
+          <button
+            t-att-class="'refresh-btn' + (state.isRefreshing ? ' spinning' : '')"
+            t-on-click="refreshData"
+            title="Refresh Dashboard">
+            ⟳
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Loading Skeleton ───────────────────────────────── -->
+      <t t-if="state.isLoading">
+        <div class="kpi-grid">
+          <t t-foreach="[1,2,3,4,5,6,7,8]" t-as="i">
+            <div class="kpi-card" style="min-height:140px;">
+              <div class="loading-skeleton" style="height:44px; width:44px; border-radius:10px; margin-bottom:16px;"/>
+              <div class="loading-skeleton" style="height:32px; width:70%; border-radius:6px; margin-bottom:8px;"/>
+              <div class="loading-skeleton" style="height:14px; width:50%; border-radius:4px;"/>
+            </div>
+          </t>
+        </div>
+      </t>
+
+      <!-- ── Error State ────────────────────────────────────── -->
+      <t t-elif="state.error">
+        <div class="empty-state">
+          <div class="empty-icon">⚠️</div>
+          <h3><t t-esc="state.error"/></h3>
+          <button class="omni-btn omni-btn--outline" t-on-click="loadDashboard">Retry</button>
+        </div>
+      </t>
+
+      <!-- ── KPI Grid ───────────────────────────────────────── -->
+      <t t-else="">
+        <div class="kpi-grid">
+          <t t-foreach="kpiCards" t-as="kpi">
+            <KpiCard
+              t-key="kpi.key"
+              title="kpi.title"
+              value="kpi.value"
+              icon="kpi.icon"
+              color="kpi.color"
+              trend="kpi.trend"
+              prefix="kpi.prefix or ''"
+              suffix="kpi.suffix or ''"/>
+          </t>
+        </div>
+
+        <!-- ── Charts + Actions Row ───────────────────────── -->
+        <t t-if="state.chartData">
+          <div class="dashboard-mid-row">
+            <!-- Revenue Bar Chart -->
+            <RentalChart
+              title="📈 Revenue (Last 30 Days)"
+              type="'revenue'"
+              data="state.chartData.revenue"
+              height="240"/>
+
+            <!-- Status Doughnut -->
+            <RentalChart
+              title="🍩 Rental Status Distribution"
+              type="'status'"
+              data="state.chartData.statusDist"
+              height="240"/>
+
+            <!-- Action Buttons Panel -->
+            <ActionButtons
+              overdueCount="state.kpis.overdue_rentals"
+              dueReturnCount="state.kpis.upcoming_returns"
+              duePickupCount="state.kpis.upcoming_pickups"
+              onRefresh="() => refreshData()"/>
+          </div>
+
+          <!-- Timeline Chart (full width) -->
+          <RentalChart
+            title="📅 Pickup vs Return Timeline (This Week)"
+            type="'timeline'"
+            data="state.chartData.timeline"
+            height="200"/>
+        </t>
+
+        <!-- ── Recent Rentals Table ───────────────────────── -->
+        <div class="dashboard-table-card">
+          <div class="table-topbar">
+            <h3>Recent Rental Orders</h3>
+            <div class="table-filter-tabs">
+              <t t-foreach="[['all','All'], ['return','Active'], ['returned','Returned'], ['pickup','Pickup']]" t-as="tab">
+                <button
+                  t-att-class="'tab' + (state.activeTab === tab[0] ? ' active' : '')"
+                  t-on-click="() => setActiveTab(tab[0])">
+                  <t t-esc="tab[1]"/>
+                </button>
+              </t>
+            </div>
+          </div>
+
+          <t t-if="state.recentRentals.length">
+            <table>
+              <thead>
+                <tr>
+                  <th>Order #</th>
+                  <th>Customer</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Total</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <t t-foreach="state.recentRentals" t-as="order">
+                  <tr t-key="order.id">
+                    <td style="font-family:'JetBrains Mono',monospace; color:#A78BFA; font-size:0.82rem;">
+                      <t t-esc="order.name"/>
+                    </td>
+                    <td style="color:#F1F5F9; font-weight:500;">
+                      <t t-esc="order.partner_id[1]"/>
+                    </td>
+                    <td><t t-esc="order.date_order"/></td>
+                    <td>
+                      <span t-att-class="getRentalStatusClass(order.rental_status)">
+                        <t t-esc="getRentalStatusLabel(order.rental_status)"/>
+                      </span>
+                    </td>
+                    <td style="color:#A78BFA; font-weight:600;">
+                      ₹<t t-esc="order.amount_total.toLocaleString('en-IN')"/>
+                    </td>
+                    <td>
+                      <div class="td-actions">
+                        <button class="quick-action quick-action--return" t-on-click="() => openOrder(order.id)">
+                          View →
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </t>
+              </tbody>
+            </table>
+          </t>
+          <t t-else="">
+            <div class="empty-state" style="padding:40px;">
+              <div class="empty-icon">📋</div>
+              <h3>No orders found</h3>
+            </div>
+          </t>
+        </div>
+      </t>
+    </div>
+  </t>
+
+</templates>
