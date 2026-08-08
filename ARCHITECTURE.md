@@ -14,32 +14,36 @@ To maximize evaluator impact and showcase realistic high-value transactions (whe
 ### 1. End-to-End Customer Rental Journey
 ```mermaid
 flowchart TD
-    A[🌐 Splash & Portal Entry] --> B[🔑 Authentication / SSO]
-    B --> C[📱 Browse Product Catalog]
+    A[🌐 Splash Screen & Portal Entry] --> B[🔑 Authentication: Employee / Portal User SSO]
+    B --> C[📱 Browse Product Catalog & Select Variants: Brand, Color, Size]
     C --> D[🧊 Interactive 3D Product Inspection]
     C --> E[🤖 AI Rental Concierge Assistance]
     
-    D & E --> F[📅 Select Rental Period & Duration]
+    D & E --> F[📅 Select Rental Period & Duration: Hourly, Daily, Weekly, Monthly]
     F --> G[⚡ Algorithmic Availability & Stock Check]
     
-    G -- Available --> H[🛒 Add to Cart with Pricelist Rule]
+    G -- Available --> H[🛒 Add to Cart with Pricelist Rule & Deposit Config]
     G -- Unavailable --> I[⚠️ Suggest Alternative Dates / Bundles]
     I --> F
     
-    H --> J[🚚 Choose Delivery Option: Store Pickup vs. Shipping]
-    J --> K[📋 Review Quotation & Rental Contract Terms]
-    K --> L[💳 Online Payment: Base Rental + Security Deposit]
-    L --> M[🧾 Automated Invoice Generation & Portal Receipt]
+    H --> J[🚚 Choose Delivery Option: Store Pickup vs. Shipping Address]
+    J --> K[📋 Review Quotation & Contract Terms with Custom Header/Footer]
+    K --> L[💳 Online Payment: Base Rental + Security Deposit Fixed / %]
+    L --> M[🧾 Automated Invoice Generation & Portal Receipt Download]
     
-    M --> N[📦 Pickup / Delivery Confirmation via QR/Barcode]
-    N --> O[⏳ Active Rental Period + Automated Smart Notifications]
+    M --> N[📦 Pickup Confirmation via Barcode / QR Code Scan]
+    N --> O[⏳ Active Rental Period + Automated N-Day Smart Notifications]
     
-    O --> P{🔄 Product Return at Agreed Time?}
+    O --> P{🔄 Product Return & Condition Inspection}
     
-    P -- On Time & Good Condition --> Q[✅ Full Security Deposit Refunded]
-    P -- Late Return / Damage --> R[⚠️ Deduct Penalty from Deposit & Refund Balance]
+    P -- On Time & Good Condition --> Q[✅ Full 100% Security Deposit Refunded]
+    P -- Overdue / Damaged / Missing Accessories --> R[🛑 Penalty & Repair Engine]
     
-    Q & R --> S[🌱 Eco-Impact Metrics Updated on User Profile]
+    R --> R1[⏱️ Calculate Overdue Fees after Grace Period]
+    R --> R2[🛠️ Initiate Repair Workflow & Missing Accessory Charge]
+    R1 & R2 --> R3[💸 Deduct Penalty from Deposit & Refund Remaining Cash/Gateway Balance]
+    
+    Q & R3 --> S[🌱 Eco-Impact Metrics & Audit History Updated]
 ```
 
 ---
@@ -47,27 +51,27 @@ flowchart TD
 ### 2. Admin Operational & Warehouse Lifecycle
 ```mermaid
 flowchart TD
-    AA[⚙️ Admin Portal Login] --> BB[📦 Product & Variant Configuration]
+    AA[⚙️ Admin Portal Login] --> BB[📦 Product & Variant Configuration: Brand, Size, Color, Stock]
     BB --> CC[💰 Pricelist & Time-Tier Matrix Setup]
-    CC --> DD[📝 Quotation Template Creation]
+    CC --> DD[📝 Quotation Template Creation with Custom Header & Footer]
     
     EE[📥 Incoming Offline / Online Rental Request] --> FF[📝 Draft Quotation Generated]
     FF --> GG[🔒 Lock Reservation Stock]
-    GG --> HH[💳 Collect Deposit & First Payment]
+    GG --> HH[💳 Collect Deposit Fixed / Percentage & First Payment]
     
-    HH --> II[📋 Daily Pickup Schedule & Sequence]
-    II --> JJ[🔍 Barcode / QR Code Scan on Handover]
+    HH --> II[📋 Daily Pickup Schedule & Route Sequence Planning]
+    II --> JJ[🔍 Barcode / QR Code Scan on Handover Checklist]
     JJ --> KK[🚚 Asset Status: Active Rental]
     
-    KK --> LL[📥 Daily Return Schedule Checklist]
-    LL --> MM[🔍 Condition Inspection & Damage Check]
+    KK --> LL[📥 Daily Return Schedule & Verification Checklist]
+    LL --> MM[🔍 Inspection: Damage Reporting & Missing Accessories Check]
     
     MM --> NN{Inspect Result}
-    NN -- Pass --> OO[💚 Refund 100% Deposit via Gateway]
-    NN -- Overdue / Damaged --> PP[🛑 Run Penalty Calculator Algorithm]
-    PP --> QQ[💸 Auto-Deduct Fee from Deposit -> Refund Remaining Balance]
+    NN -- Pass --> OO[💚 Refund 100% Deposit via Gateway / Cash]
+    NN -- Overdue / Damaged --> PP[🛑 Run Penalty & Repair Workflow Engine]
+    PP --> QQ[💸 Auto-Deduct Penalty/Repair Fee from Deposit -> Refund Remaining Balance]
     
-    OO & QQ --> RR[📈 Real-Time Dashboard Metrics Updated]
+    OO & QQ --> RR[📈 Real-Time Operations Dashboard & Deposit History Updated]
 ```
 
 ---
@@ -87,27 +91,30 @@ flowchart TD
 
 ---
 
-### 4. Security Deposit & Penalty Settlement Engine
+### 4. Security Deposit & Penalty Settlement Engine (with Grace Period & Repair Flow)
 ```mermaid
 flowchart TD
-    Ret([Product Returned]) --> TimeCheck{Actual Return Time <= Scheduled Return Time + Grace Period?}
+    Ret([Product Returned to Store/Warehouse]) --> GraceCheck{Return Time <= Scheduled Time + Configured Grace Period?}
     
-    TimeCheck -- Yes --> NoPenalty[Late Penalty = ₹0]
-    TimeCheck -- No --> CalcPenalty[Calculate Overdue Hours/Days]
+    GraceCheck -- Yes --> NoPenalty[Late Penalty = ₹0]
+    GraceCheck -- No --> CalcPenalty[Calculate Overdue Duration]
     
-    CalcPenalty --> ApplyTier[Apply Penalty Rate from Pricelist Tier: e.g., 1.5x Hourly Rate]
-    ApplyTier --> CapCheck{Penalty Amount > Max Late Fee Cap?}
-    CapCheck -- Yes --> CapPenalty[Set Penalty = Max Late Fee Cap]
+    CalcPenalty --> ApplyTier[Apply Rate from Pricelist Tier: Hourly / Daily / Monthly Rate]
+    ApplyTier --> CapCheck{Penalty Amount > Max Late Fee Limit?}
+    CapCheck -- Yes --> CapPenalty[Set Penalty = Max Late Fee Limit]
     CapCheck -- No --> FinalPenalty[Set Penalty = Calculated Amount]
     
-    NoPenalty & CapPenalty & FinalPenalty --> Inspection[Check Damage / Missing Accessories]
-    Inspection --> TotalDeduction[Total Deduction = Penalty + Damage Fee]
+    NoPenalty & CapPenalty & FinalPenalty --> Inspection[Check Damage & Missing Accessories]
+    Inspection -- Damage Detected --> RepairFlow[🔧 Initiate Repair Workflow & Estimate Repair Cost]
+    Inspection -- Accessories Missing --> AccFee[Deduct Missing Accessory Cost]
     
-    TotalDeduction --> DepositCompare{Total Deduction >= Security Deposit?}
+    RepairFlow & AccFee --> TotalDeduction[Total Deduction = Late Penalty + Repair Fee + Missing Accessory Fee]
+    
+    TotalDeduction --> DepositCompare{Total Deduction >= Security Deposit Held?}
     DepositCompare -- Yes --> Forfeit[Forfeit Entire Security Deposit + Generate Balance Invoice]
     DepositCompare -- No --> PartialRefund[Refund = Security Deposit - Total Deduction]
     
-    Forfeit & PartialRefund --> Gateway[Initiate Automated Gateway Refund/Charge & Audit Log]
+    Forfeit & PartialRefund --> Gateway[Initiate Automated Gateway / Cash Refund & Audit Log]
 ```
 
 ---
@@ -127,18 +134,26 @@ flowchart TD
 
 ---
 
-## 🧮 Core Data Model Schema (Entity Relationship Outline)
+## 🧮 Comprehensive Database Schema (Entity Relationship Outline)
 
 ```sql
--- 1. Product Table
+-- 1. Product & Variants Table
 CREATE TABLE products (
     id UUID PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    category VARCHAR(100),
+    brand VARCHAR(100),
+    manufacturer VARCHAR(100),
+    color VARCHAR(50),
+    size VARCHAR(50),
     total_stock INT NOT NULL,
     base_price_per_hour NUMERIC(10, 2),
     base_price_per_day NUMERIC(10, 2),
-    security_deposit_amount NUMERIC(10, 2),
+    base_price_per_week NUMERIC(10, 2),
+    base_price_per_month NUMERIC(10, 2),
+    deposit_type VARCHAR(20) DEFAULT 'FIXED', -- 'FIXED' or 'PERCENTAGE'
+    security_deposit_amount NUMERIC(10, 2), -- Fixed amount or percentage e.g. 20.00%
+    grace_period_minutes INT DEFAULT 30,
+    max_late_fee_limit NUMERIC(10, 2),
     model_3d_url VARCHAR(512),
     co2_savings_kg NUMERIC(6, 2)
 );
@@ -149,23 +164,49 @@ CREATE TABLE pricelists (
     name VARCHAR(100) NOT NULL, -- e.g., 'Corporate VIP', 'Weekend Special'
     customer_tier VARCHAR(50),
     discount_percentage NUMERIC(5, 2),
-    min_rental_duration_hours INT
+    valid_from TIMESTAMPTZ,
+    valid_until TIMESTAMPTZ
 );
 
--- 3. Rental Order & Contract
+-- 3. Quotation Templates
+CREATE TABLE quotation_templates (
+    id UUID PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    header_text TEXT,
+    footer_text TEXT,
+    default_payment_terms TEXT
+);
+
+-- 4. Rental Order & Contract
 CREATE TABLE rental_orders (
     id UUID PRIMARY KEY,
     customer_id UUID REFERENCES users(id),
-    status VARCHAR(50), -- DRAFT, QUOTATION, CONFIRMED, PICKED_UP, RETURNED, OVERDUE
+    status VARCHAR(50), -- DRAFT, QUOTATION, CONFIRMED, PICKED_UP, RETURNED, OVERDUE, REPAIR
+    delivery_type VARCHAR(50), -- 'STORE_PICKUP' or 'SHIPPING'
+    pickup_route_sequence INT,
     start_time TIMESTAMPTZ NOT NULL,
     end_time TIMESTAMPTZ NOT NULL,
+    actual_return_time TIMESTAMPTZ,
     total_rental_fee NUMERIC(10, 2),
     security_deposit_held NUMERIC(10, 2),
-    penalty_deducted NUMERIC(10, 2) DEFAULT 0,
+    late_penalty_deducted NUMERIC(10, 2) DEFAULT 0,
+    repair_fee_deducted NUMERIC(10, 2) DEFAULT 0,
+    deposit_refunded NUMERIC(10, 2) DEFAULT 0,
     qr_code_hash VARCHAR(256)
 );
 
--- 4. Overlap Index Range Constraint (PostgreSQL TSTZRANGE)
+-- 5. Repair Workflows
+CREATE TABLE repair_workflows (
+    id UUID PRIMARY KEY,
+    order_id UUID REFERENCES rental_orders(id),
+    product_id UUID REFERENCES products(id),
+    issue_description TEXT,
+    missing_accessories TEXT,
+    estimated_cost NUMERIC(10, 2),
+    status VARCHAR(50) -- 'INSPECTION_PENDING', 'IN_REPAIR', 'RESOLVED'
+);
+
+-- 6. Overlap Index Range Constraint (PostgreSQL TSTZRANGE)
 CREATE EXTENSION btree_gist;
 ALTER TABLE rental_order_items ADD CONSTRAINT no_overbooking 
 EXCLUDE USING gist (product_id WITH =, TSTZRANGE(start_time, end_time) WITH &&);
