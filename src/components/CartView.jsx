@@ -22,14 +22,14 @@ export default function CartView() {
     triggerNotification
   } = useApp();
 
-  // Express Checkout Popup State
+  // Express Checkout Popup State (pre-populated for 1-click payment)
   const [expressOpen, setExpressOpen] = useState(false);
-  const [expCard, setExpCard] = useState('');
-  const [expName, setExpName] = useState('');
-  const [expEmail, setExpEmail] = useState('');
-  const [expAddress, setExpAddress] = useState('');
-  const [expZip, setExpZip] = useState('');
-  const [expCity, setExpCity] = useState('');
+  const [expCard, setExpCard] = useState('4242 4242 4242 4242');
+  const [expName, setExpName] = useState(user?.name || 'Alex Mercer');
+  const [expEmail, setExpEmail] = useState(user?.email || 'alex.m@example.com');
+  const [expAddress, setExpAddress] = useState('123 Main Street Address');
+  const [expZip, setExpZip] = useState('94103');
+  const [expCity, setExpCity] = useState('San Francisco');
   const [expCountry, setExpCountry] = useState('United States');
 
   // Staged Rental Period selectors
@@ -44,23 +44,27 @@ export default function CartView() {
 
   const handleExpressSubmit = (e) => {
     e.preventDefault();
-    if (!expCard || !expName || !expEmail || !expAddress || !expZip || !expCity) {
-      triggerNotification('Please fill in all Express Checkout fields.', 'error');
-      return;
-    }
+
+    const cardVal  = expCard.trim() || '4242 4242 4242 4242';
+    const nameVal  = expName.trim() || user?.name || 'Alex Mercer';
+    const emailVal = expEmail.trim() || user?.email || 'alex.m@example.com';
+    const addrVal  = expAddress.trim() || '123 Main Street Address';
+    const zipVal   = expZip.trim() || '94103';
+    const cityVal  = expCity.trim() || 'San Francisco';
 
     const tempAddress = {
-      fullName: expName,
+      fullName: nameVal,
+      email: emailVal,
       phone: '+1 (555) 000-0000',
-      addressLine: expAddress,
-      city: expCity,
-      zipCode: expZip,
+      addressLine: addrVal,
+      city: cityVal,
+      zipCode: zipVal,
       country: expCountry
     };
 
     const orderId = finalizeOrder(tempAddress, {
-      cardNumber: expCard,
-      cardName: expName,
+      cardNumber: cardVal,
+      cardName: nameVal,
       expiry: '12/28',
       cvv: '123',
       saveCard: false
@@ -69,7 +73,10 @@ export default function CartView() {
     if (orderId) {
       setExpressOpen(false);
       setSelectedOrderId(orderId);
+      triggerNotification('Payment successful! Order confirmed.', 'success');
       setCurrentView('order-confirmation');
+    } else {
+      triggerNotification('Failed to process payment. Please try again.', 'error');
     }
   };
 
@@ -355,11 +362,10 @@ export default function CartView() {
                 <label className="text-[10px] text-gray-400 font-bold uppercase">Card Details</label>
                 <input
                   type="text"
-                  placeholder="xxxx xxxx xxxx xxxx"
+                  placeholder="4242 4242 4242 4242"
                   value={expCard}
                   onChange={(e) => setExpCard(e.target.value)}
                   className="w-full rounded bg-darkBg border border-darkBg-border p-2 text-white outline-none focus:border-accent-mint text-[11px]"
-                  required
                 />
               </div>
 
@@ -372,7 +378,6 @@ export default function CartView() {
                     value={expName}
                     onChange={(e) => setExpName(e.target.value)}
                     className="w-full rounded bg-darkBg border border-darkBg-border p-2 text-white outline-none focus:border-accent-mint text-[11px]"
-                    required
                   />
                 </div>
                 
@@ -384,7 +389,6 @@ export default function CartView() {
                     value={expEmail}
                     onChange={(e) => setExpEmail(e.target.value)}
                     className="w-full rounded bg-darkBg border border-darkBg-border p-2 text-white outline-none focus:border-accent-mint text-[11px]"
-                    required
                   />
                 </div>
               </div>
@@ -397,7 +401,6 @@ export default function CartView() {
                   value={expAddress}
                   onChange={(e) => setExpAddress(e.target.value)}
                   className="w-full rounded bg-darkBg border border-darkBg-border p-2 text-white outline-none focus:border-accent-mint text-[11px]"
-                  required
                 />
               </div>
 
@@ -410,7 +413,6 @@ export default function CartView() {
                     value={expZip}
                     onChange={(e) => setExpZip(e.target.value)}
                     className="w-full rounded bg-darkBg border border-darkBg-border p-2 text-white outline-none focus:border-accent-mint text-[11px]"
-                    required
                   />
                 </div>
                 
@@ -422,7 +424,6 @@ export default function CartView() {
                     value={expCity}
                     onChange={(e) => setExpCity(e.target.value)}
                     className="w-full rounded bg-darkBg border border-darkBg-border p-2 text-white outline-none focus:border-accent-mint text-[11px]"
-                    required
                   />
                 </div>
 
@@ -433,7 +434,6 @@ export default function CartView() {
                     value={expCountry}
                     onChange={(e) => setExpCountry(e.target.value)}
                     className="w-full rounded bg-darkBg border border-darkBg-border p-2 text-white outline-none focus:border-accent-mint text-[11px]"
-                    required
                   />
                 </div>
               </div>
