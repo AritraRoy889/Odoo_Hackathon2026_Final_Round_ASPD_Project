@@ -262,28 +262,43 @@ export default function CartView() {
             </div>
           </div>
 
-          {/* Dynamic Apply Coupon input forms (Image 4) */}
+          {/* Dynamic Apply Coupon input forms */}
           <div className="border-t border-darkBg-border/50 pt-4 space-y-3">
             {appliedCoupon ? (
-              <div className="flex items-center justify-between bg-accent-mint/10 border border-accent-mint/20 p-2 rounded text-xs text-accent-mint font-semibold">
-                <span>Code: {appliedCoupon.code} (-{appliedCoupon.discountPercent}%)</span>
-                <button type="button" onClick={removeCoupon} className="text-red-400 underline font-bold">Remove</button>
+              <div className="flex items-center justify-between bg-accent-mint/10 border border-accent-mint/30 p-3 rounded-lg text-xs text-accent-mint font-bold animate-fade-in shadow-glow-subtle">
+                <span className="flex items-center space-x-1.5">
+                  <span>🎉</span>
+                  <span>Code: {appliedCoupon.code} ({appliedCoupon.discountPercent}% OFF)</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={removeCoupon}
+                  className="text-red-400 hover:text-red-300 underline text-[11px] font-extrabold uppercase transition-colors cursor-pointer"
+                >
+                  Remove
+                </button>
               </div>
             ) : (
               <div className="space-y-2">
                 <input
                   type="text"
-                  placeholder="Coupon code (e.g. SAVINGS)"
+                  placeholder="COUPON CODE (E.G. SAVINGS)"
                   value={couponCode}
                   onChange={(e) => setCouponCode(e.target.value)}
-                  className="w-full rounded border border-darkBg-border bg-darkBg p-2 text-xs text-white uppercase outline-none focus:border-accent-mint"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      applyCoupon(couponCode);
+                    }
+                  }}
+                  className="w-full rounded-lg border border-darkBg-border bg-darkBg p-2.5 text-xs text-white uppercase outline-none focus:border-accent-mint tracking-wider font-semibold"
                 />
                 
                 {/* Apply Coupon green button */}
                 <button
                   type="button"
                   onClick={() => applyCoupon(couponCode)}
-                  className="w-full text-center py-2.5 bg-green-600 hover:bg-green-500 rounded text-xs text-white font-bold transition-colors shadow-glow-subtle uppercase"
+                  className="w-full text-center py-2.5 bg-green-600 hover:bg-green-500 rounded-lg text-xs text-white font-extrabold tracking-wider transition-all shadow-glow-subtle uppercase cursor-pointer"
                 >
                   Apply Coupon
                 </button>

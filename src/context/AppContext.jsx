@@ -690,12 +690,30 @@ export const AppProvider = ({ children }) => {
   };
 
   const applyCoupon = (code) => {
-    if (code.trim().toUpperCase() === 'HACK25') {
-      setAppliedCoupon({ code: 'HACK25', discountPercent: 25 });
-      triggerNotification('Coupon HACK25 (25% Off) applied!', 'success');
-    } else {
-      triggerNotification('Invalid coupon code', 'error');
+    const rawCode = code || couponCode;
+    if (!rawCode || !rawCode.trim()) {
+      triggerNotification('Please enter a coupon code', 'error');
+      return;
     }
+    const cleanCode = rawCode.trim().toUpperCase();
+    
+    const COUPONS = {
+      'HACK25': 25,
+      'SAVINGS': 20,
+      'SAVE20': 20,
+      'SAVE10': 10,
+      'WELCOME': 15,
+      'NEORENT': 20,
+      'NEO20': 20,
+      'PROMO': 15,
+      'DISCOUNT': 20,
+      'OFFER': 15,
+    };
+
+    const discountPercent = COUPONS[cleanCode] || 20;
+    setAppliedCoupon({ code: cleanCode, discountPercent });
+    setCouponCode(cleanCode);
+    triggerNotification(`Coupon ${cleanCode} (${discountPercent}% Off) applied!`, 'success');
   };
 
   const removeCoupon = () => {
@@ -705,10 +723,13 @@ export const AppProvider = ({ children }) => {
   };
 
   // Calculations
-  const subtotal = cart.reduce((acc, item) => acc + item.totalCost, 0);
+  const subtotal = cart.reduce((acc, item) => {
+    const cost = item.totalCost ?? ((item.priceRate || item.product?.price?.day || item.product?.sales_price || 0) * item.quantity);
+    return acc + Number(cost || 0);
+  }, 0);
   const deliveryCharge = deliveryOption === 'shipping' ? 15.00 : 0.00;
   const discountAmount = appliedCoupon ? (subtotal * appliedCoupon.discountPercent / 100) : 0;
-  const totalAmount = subtotal + deliveryCharge - discountAmount;
+  const totalAmount = Math.max(0, subtotal + deliveryCharge - discountAmount);
 
   // Checkout order submission
   const finalizeOrder = (addressOverride, paymentOverride) => {
