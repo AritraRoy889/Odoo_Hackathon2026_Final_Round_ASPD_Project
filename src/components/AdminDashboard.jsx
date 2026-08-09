@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { List, Kanban, Plus, Search, ArrowLeft, Calendar, Trash2 } from 'lucide-react';
+import { List, Kanban, Plus, Search, ArrowLeft, Calendar, Trash2, Download, ClipboardList, Package, BarChart2, Radio, BookOpen, Settings, ShoppingBag } from 'lucide-react';
+import RiskBadge from './RiskBadge';
+import CountdownTimer from './CountdownTimer';
+import RentalJourneyTimeline from './RentalJourneyTimeline';
+import VoiceCommandPanel from './VoiceCommandPanel';
+import { celebrateOrderConfirmed, celebrateInvoicePaid } from '../utils/celebrate';
+import jsPDF from 'jspdf';
 
 export default function AdminDashboard() {
   const {
@@ -237,19 +243,28 @@ export default function AdminDashboard() {
       {/* 1. WIREFRAME MAIN MENU HEADER NAVIGATION (Image 11) */}
       <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 bg-darkBg-card border border-darkBg-border p-3 rounded-lg shadow-glow-subtle glass">
         
-        {/* Navigation Tabs */}
-        <div className="flex flex-wrap gap-1 md:gap-2">
-          {['Order', 'Schedule', 'Product', 'Report', 'IoT Tracking', 'Audit Trail', 'Settings'].map((tab) => (
+        {/* Navigation Tabs — Premium Icon Style */}
+        <div className="flex flex-wrap gap-1 md:gap-1.5">
+          {[
+            { id: 'Order',       label: 'Orders',   icon: ClipboardList },
+            { id: 'Schedule',    label: 'Schedule', icon: Calendar },
+            { id: 'Product',     label: 'Products', icon: Package },
+            { id: 'Report',      label: 'Reports',  icon: BarChart2 },
+            { id: 'IoT Tracking',label: 'IoT',      icon: Radio },
+            { id: 'Audit Trail', label: 'Audit',    icon: BookOpen },
+            { id: 'Settings',    label: 'Settings', icon: Settings },
+          ].map(({ id, label, icon: Icon }) => (
             <button
-              key={tab}
-              onClick={() => handleTabChange(tab)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-extrabold uppercase tracking-wider transition-all border ${
-                activeTab === tab 
-                  ? 'bg-accent-mint text-darkBg border-accent-mint shadow-glow-subtle' 
-                  : 'bg-darkBg border-darkBg-border text-gray-400 hover:text-white'
+              key={id}
+              onClick={() => handleTabChange(id)}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-[11px] font-extrabold uppercase tracking-wider transition-all duration-200 border ${
+                activeTab === id
+                  ? 'bg-gradient-to-r from-accent-teal to-accent-tealDark text-darkBg border-accent-teal shadow-glow-subtle'
+                  : 'bg-darkBg border-darkBg-border text-gray-400 hover:text-white hover:border-[#2A3555]'
               }`}
             >
-              {tab}
+              <Icon className="h-3 w-3" />
+              <span className="hidden sm:inline">{label}</span>
             </button>
           ))}
         </div>
@@ -509,10 +524,11 @@ export default function AdminDashboard() {
                           <th className="p-3 font-bold uppercase">Order Reference</th>
                           <th className="p-3 font-bold uppercase">Customer</th>
                           <th className="p-3 font-bold uppercase text-center">Status</th>
-                          <th className="p-3 font-bold uppercase">Pickup Date</th>
                           <th className="p-3 font-bold uppercase">Return Date</th>
+                          <th className="p-3 font-bold uppercase text-center">⏱ Timer</th>
+                          <th className="p-3 font-bold uppercase text-center">🛡 Risk</th>
                           <th className="p-3 font-bold uppercase text-right">Total</th>
-                          <th className="p-3 font-bold uppercase text-center">Invoice Status</th>
+                          <th className="p-3 font-bold uppercase text-center">Invoice</th>
                           <th className="p-3 font-bold uppercase text-center">Actions</th>
                         </tr>
                       </thead>
@@ -534,9 +550,14 @@ export default function AdminDashboard() {
                                   {order.status === 'SALE_ORDER' ? 'Confirmed' : order.status}
                                 </span>
                               </td>
-                              <td className="p-3 text-gray-400">{order.pickupDate}</td>
                               <td className="p-3 text-gray-400">{order.returnDate}</td>
-                              <td className="p-3 text-right font-extrabold text-white">${Number(order.total || 0).toFixed(2)}</td>
+                              <td className="p-3 text-center" onClick={(e) => e.stopPropagation()}>
+                                <CountdownTimer returnDate={order.returnDate} compact lateFeePerHour={lateFeePerHour} />
+                              </td>
+                              <td className="p-3 text-center" onClick={(e) => e.stopPropagation()}>
+                                <RiskBadge order={order} allOrders={orders} compact />
+                              </td>
+                              <td className="p-3 text-right font-extrabold text-white price-mono">${Number(order.total || 0).toFixed(2)}</td>
                               <td className="p-3 text-center text-[10px] font-bold uppercase" onClick={(e) => e.stopPropagation()}>
                                 {order.invoiceStatus === 'Quotation Sent' && (
                                   <span className="px-2.5 py-1 rounded bg-purple-900/30 text-purple-300 border border-purple-500/25 inline-block">
@@ -728,10 +749,11 @@ export default function AdminDashboard() {
                         onClick={() => {
                           confirmSale(inspectOrderRef.orderId);
                           setInspectOrderRef({ ...inspectOrderRef, status: 'SALE_ORDER' });
+                          celebrateOrderConfirmed();
                         }}
-                        className="px-4 py-2 rounded border border-darkBg-border bg-darkBg text-gray-300 hover:border-accent-mint text-xs font-extrabold uppercase transition-colors"
+                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-accent-teal to-accent-tealDark text-darkBg text-xs font-extrabold uppercase shadow-glow transition-all hover:shadow-glow-lg"
                       >
-                        Confirm
+                        ✅ Confirm Sale
                       </button>
                       <button
                         type="button"
@@ -799,22 +821,13 @@ export default function AdminDashboard() {
 
               </div>
 
-              {/* Status Machine Steps progression tracker (Excalidraw Image 3) */}
-              <div className="flex border border-darkBg-border bg-darkBg rounded p-1 max-w-sm text-[10px] font-bold uppercase tracking-wider">
-                {['Quotation', 'Quotation Sent', 'Sale Order'].map((step, idx) => {
-                  const dbStepName = idx === 0 ? 'QUOTATION' : idx === 1 ? 'QUOTATION_SENT' : 'SALE_ORDER';
-                  const isActive = inspectOrderRef.status === dbStepName;
-                  return (
-                    <div
-                      key={step}
-                      className={`flex-1 text-center py-1.5 rounded transition-colors ${
-                        isActive ? 'bg-accent-mint text-darkBg font-extrabold shadow-glow-subtle' : 'text-gray-500'
-                      }`}
-                    >
-                      {step}
-                    </div>
-                  );
-                })}
+              {/* Rental Journey Full Timeline + Countdown */}
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                <RentalJourneyTimeline order={inspectOrderRef} />
+                <div className="space-y-3">
+                  <CountdownTimer returnDate={inspectOrderRef.returnDate} lateFeePerHour={lateFeePerHour} />
+                  <RiskBadge order={inspectOrderRef} allOrders={orders} compact />
+                </div>
               </div>
 
               {/* Details Inputs layout & Order Lines matching Image 3 */}
@@ -1050,11 +1063,11 @@ export default function AdminDashboard() {
                         type="button"
                         onClick={() => {
                           postInvoice(inspectInvoiceRef.invoiceId);
-                          // Keep inspecting but updated
                           setInspectInvoiceRef({ ...inspectInvoiceRef, status: 'POSTED' });
                           triggerNotification('Invoice confirmed (Posted)', 'success');
+                          celebrateInvoicePaid();
                         }}
-                        className="px-4 py-2 rounded bg-purple-600 hover:bg-purple-500 text-white text-xs font-extrabold uppercase shadow-glow-subtle transition-colors"
+                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-accent-violet to-accent-violetDark text-white text-xs font-extrabold uppercase shadow-glow-violet transition-all hover:shadow-[0_0_25px_rgba(124,58,237,0.5)]"
                       >
                         Confirm
                       </button>
@@ -2365,7 +2378,42 @@ export default function AdminDashboard() {
           {/* Header controls matching Image 1 */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-darkBg-border pb-4">
             <div className="flex flex-wrap items-center gap-2.5">
-              <span className="text-base font-extrabold text-white">Reports</span>
+              <span className="text-base font-extrabold text-white font-display">📊 Reports</span>
+              <button
+                type="button"
+                onClick={() => {
+                  try {
+                    const doc = new jsPDF('p','mm','a4');
+                    const totalRevenue = orders.reduce((s,o) => s+(o.total||0),0);
+                    const lateCount = orders.filter(o=>o.kanbanCategory==='Late').length;
+                    doc.setFillColor(6,7,15); doc.rect(0,0,210,297,'F');
+                    doc.setTextColor(0,229,176); doc.setFontSize(28); doc.setFont('helvetica','bold'); doc.text('NEORENT',20,35);
+                    doc.setTextColor(200,200,200); doc.setFontSize(12); doc.text('Executive Rental Report',20,48);
+                    doc.setTextColor(120,120,120); doc.setFontSize(9); doc.text(`Generated: ${new Date().toLocaleDateString()}`,20,57);
+                    doc.setDrawColor(0,229,176); doc.line(20,63,190,63);
+                    doc.setTextColor(200,200,200); doc.setFontSize(10); doc.setFont('helvetica','bold');
+                    doc.text('SUMMARY METRICS',20,75);
+                    doc.setFont('helvetica','normal'); doc.setFontSize(9);
+                    doc.text(`Total Orders: ${orders.length}`,20,85); doc.text(`Late Orders: ${lateCount}`,20,93);
+                    doc.text(`Total Revenue: $${totalRevenue.toFixed(2)}`,20,101); doc.text(`Invoices: ${invoices.length}`,20,109);
+                    doc.setDrawColor(28,36,56); doc.line(20,116,190,116);
+                    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(0,229,176);
+                    doc.text('ORDER ID',20,126); doc.text('CUSTOMER',60,126); doc.text('STATUS',130,126); doc.text('TOTAL',170,126);
+                    doc.setFont('helvetica','normal'); doc.setTextColor(180,180,180);
+                    orders.slice(0,18).forEach((o,i)=>{
+                      const y=134+i*8;
+                      doc.text(o.orderId||'—',20,y); doc.text((o.customerName||'').slice(0,22),60,y);
+                      doc.text(o.kanbanCategory||'—',130,y); doc.text(`$${Number(o.total||0).toFixed(0)}`,170,y);
+                    });
+                    doc.save('NeoRent_Executive_Report.pdf');
+                    triggerNotification('📄 Executive PDF downloaded!','success');
+                  } catch(e){ triggerNotification('PDF generation failed','error'); }
+                }}
+                className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-accent-violet to-accent-violetDark text-white text-xs font-extrabold uppercase shadow-glow-violet hover:shadow-[0_0_25px_rgba(124,58,237,0.5)] transition-all"
+              >
+                <Download className="h-3.5 w-3.5" />
+                <span>Export PDF</span>
+              </button>
               
               {/* Settings Gear Popover Trigger */}
               <div className="relative">
@@ -3303,6 +3351,32 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
+
+      {/* Voice Command Panel */}
+      <VoiceCommandPanel
+        triggerNotification={triggerNotification}
+        onCommand={(heard) => {
+          if (heard.includes('late') || heard.includes('overdue')) {
+            setActiveFilterPill('Late');
+            triggerNotification('🎙️ Filtered: Late orders', 'success');
+          } else if (heard.includes('pickup')) {
+            setActiveFilterPill('Pickup');
+            triggerNotification('🎙️ Filtered: Pickup orders', 'success');
+          } else if (heard.includes('all') || heard.includes('reset')) {
+            setActiveFilterPill('All');
+            triggerNotification('🎙️ Filter cleared', 'info');
+          } else if (heard.includes('product')) {
+            handleTabChange('Product');
+            triggerNotification('🎙️ Switched to Products', 'info');
+          } else if (heard.includes('report') || heard.includes('revenue')) {
+            handleTabChange('Report');
+            triggerNotification('🎙️ Switched to Reports', 'info');
+          } else if (heard.includes('setting')) {
+            handleTabChange('Settings');
+            triggerNotification('🎙️ Switched to Settings', 'info');
+          }
+        }}
+      />
 
     </div>
   );

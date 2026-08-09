@@ -1,6 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { Printer, ArrowLeft, Calendar, FileText, CheckCircle2, User } from 'lucide-react';
+import { Printer, ArrowLeft, FileText, CheckCircle2, Package, Timer } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
+import CountdownTimer from './CountdownTimer';
+import { celebrateOrderConfirmed } from '../utils/celebrate';
+
 
 export default function OrderConfirmation() {
   const { 
@@ -14,16 +18,25 @@ export default function OrderConfirmation() {
 
   const activeOrder = orders.find(o => o.orderId === selectedOrderId) || orders[0];
 
-  const handlePrint = () => {
-    window.print();
-  };
+  // Fire confetti on mount
+  useEffect(() => {
+    const timer = setTimeout(() => celebrateOrderConfirmed(), 300);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handlePrint = () => window.print();
 
   const handleDownloadPDF = () => {
-    triggerNotification('Generating Official Invoice PDF via APITemplate.io...', 'info');
-    setTimeout(() => {
-      window.print();
-    }, 800);
+    triggerNotification('Generating Official Invoice PDF...', 'info');
+    setTimeout(() => window.print(), 800);
   };
+
+  // Build QR payload
+  const qrPayload = activeOrder ? JSON.stringify({
+    orderId: activeOrder.orderId,
+    customer: activeOrder.customerName,
+    token: btoa((activeOrder.orderId || '') + (activeOrder.customerEmail || 'guest'))
+  }) : '';
 
   if (!activeOrder) {
     return (
@@ -72,39 +85,38 @@ export default function OrderConfirmation() {
       </div>
 
       {/* Main Success Card */}
-      <div className="bg-darkBg-card border border-darkBg-border rounded-xl p-6 shadow-glow-subtle glass print-card print-text-black">
+      <div className="bg-[#0D1117] border border-[#1C2438] rounded-2xl p-6 shadow-card glass-premium print-card print-text-black">
         
-        {/* Title & QR Code Waybill Header */}
-        <div className="flex justify-between items-center border-b border-darkBg-border/40 pb-4 mb-4">
+        {/* Title & QR Code Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-[#1C2438]/40 pb-5 mb-5 gap-4">
           <div>
-            <h2 className="text-xl font-extrabold text-white print-text-black">Thank you for your order</h2>
-            <p className="text-xs text-accent-mint font-semibold mt-1">Order {activeOrder.orderId}</p>
-          </div>
-
-          {/* QR Server Live Printable Waybill QR & Code128 Asset Barcode */}
-          <div className="flex items-center space-x-3">
-            {/* BWIP-JS Code128 Asset Barcode */}
-            <div className="hidden md:flex flex-col items-center bg-white px-2 py-1 rounded-lg border border-darkBg-border">
-              <img
-                src={`https://bwipjs-api.metafloor.com/?bcid=code128&text=${encodeURIComponent('ASSET-' + activeOrder.orderId)}`}
-                alt="Code128 Asset Barcode"
-                className="h-8"
-              />
-              <span className="text-[8px] font-mono font-bold text-gray-800">ASSET-{activeOrder.orderId}</span>
-            </div>
-
-            {/* Waybill QR */}
-            <div className="flex items-center space-x-3 bg-white p-1.5 rounded-lg border border-darkBg-border">
-              <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=NEORENT-WAYBILL-${activeOrder.orderId}`}
-                alt="Waybill QR Code"
-                className="h-12 w-12"
-              />
-              <div className="text-[9px] text-gray-800 font-mono font-bold leading-tight hidden sm:block">
-                <p>WAYBILL QR</p>
-                <p>{activeOrder.orderId}</p>
+            {/* Animated checkmark */}
+            <div className="flex items-center space-x-3 mb-2">
+              <div className="h-10 w-10 rounded-xl bg-accent-teal/15 border border-accent-teal/30 flex items-center justify-center">
+                <CheckCircle2 className="h-5 w-5 text-accent-teal" />
+              </div>
+              <div>
+                <h2 className="text-xl font-extrabold text-white font-display print-text-black">Order Confirmed!</h2>
+                <p className="text-xs text-accent-teal font-bold">Ref: {activeOrder.orderId}</p>
               </div>
             </div>
+            <p className="text-xs text-gray-500">Your rental is now being processed. Check your email for delivery details.</p>
+          </div>
+
+          {/* QR Code block with scan frame */}
+          <div className="flex flex-col items-center space-y-2">
+            <div className="scan-frame p-3 bg-white rounded-xl border-2 border-accent-teal/40 shadow-glow-subtle">
+              <QRCodeSVG
+                value={qrPayload || activeOrder.orderId}
+                size={90}
+                fgColor="#06070F"
+                bgColor="#ffffff"
+                level="M"
+              />
+            </div>
+            <span className="text-[9px] font-bold text-accent-teal uppercase tracking-widest">✅ Rental Pass</span>
+            {/* Countdown under QR */}
+            <CountdownTimer returnDate={activeOrder.returnDate} compact />
           </div>
         </div>
 

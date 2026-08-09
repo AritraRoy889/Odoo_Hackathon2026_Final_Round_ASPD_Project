@@ -1,138 +1,163 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import ProductCard from './ProductCard';
-import { ChevronLeft, ChevronRight, HelpCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, PackageSearch, SlidersHorizontal } from 'lucide-react';
+
+const CATEGORIES = ['All', 'Electronics', 'Furniture', 'Photography'];
 
 export default function ProductGrid({ onConfigureProduct }) {
   const { products, searchQuery, filters } = useApp();
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 3; // Kept at 3 to demonstrate pagination with our 4-item catalog
+  const [activeCategory, setActiveCategory] = useState('All');
+  const itemsPerPage = 6;
 
-  // Apply filters dynamically
   const filteredProducts = products.filter((product) => {
-    // 1. Search Query filter (matches name, brand, or category)
-    if (searchQuery.trim() !== '') {
+    // Category tab filter
+    if (activeCategory !== 'All' && product.category !== activeCategory) return false;
+
+    // Search query
+    if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      const match = 
-        product.name.toLowerCase().includes(q) ||
-        product.brand.toLowerCase().includes(q) ||
-        product.category.toLowerCase().includes(q);
+      if (!product.name.toLowerCase().includes(q) &&
+          !product.brand.toLowerCase().includes(q) &&
+          !product.category.toLowerCase().includes(q)) return false;
+    }
+
+    // Brands
+    if (filters.brands.length > 0 && !filters.brands.includes(product.brand)) return false;
+
+    // Colors
+    if (filters.colors.length > 0) {
+      const match = product.colors?.some(c => filters.colors.includes(c));
       if (!match) return false;
     }
 
-    // 2. Brand Checkboxes filter
-    if (filters.brands.length > 0) {
-      if (!filters.brands.includes(product.brand)) return false;
-    }
-
-    // 3. Color Swatches filter (matches any color variant on the card)
-    if (filters.colors.length > 0) {
-      const hasMatchingColor = product.colors && product.colors.some((color) => 
-        filters.colors.includes(color)
-      );
-      if (!hasMatchingColor) return false;
-    }
-
-    // 4. Price slider filter (against selected rate tier: hour, day, month)
-    const activeRatePrice = (product.price && product.price[filters.duration] !== undefined)
-      ? product.price[filters.duration]
-      : (product.sales_price || 0);
-    if (activeRatePrice < filters.priceRange[0] || activeRatePrice > filters.priceRange[1]) {
-      return false;
-    }
+    // Price
+    const price = product.price?.[filters.duration] ?? product.sales_price ?? 0;
+    if (price < filters.priceRange[0] || price > filters.priceRange[1]) return false;
 
     return true;
   });
 
-  // Reset page when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, filters]);
+  useEffect(() => { setCurrentPage(1); }, [searchQuery, filters, activeCategory]);
 
-  // Pagination bounds calculation
   const totalItems = filteredProducts.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedProducts = filteredProducts.slice(startIndex, startIndex + itemsPerPage);
 
-  const handlePrevPage = () => {
-    if (currentPage > 1) setCurrentPage(currentPage - 1);
-  };
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
-  };
+  // Count per category
+  const getCategoryCount = (cat) =>
+    cat === 'All' ? products.length : products.filter(p => p.category === cat).length;
 
   return (
-    <div className="flex-1 space-y-6">
-      
-      {/* Search status bar */}
-      <div className="flex items-center justify-between text-xs text-gray-400">
-        <p>
-          Showing <span className="text-white font-semibold">{totalItems === 0 ? 0 : startIndex + 1}</span>-
-          <span className="text-white font-semibold">{Math.min(startIndex + itemsPerPage, totalItems)}</span> of{' '}
-          <span className="text-white font-semibold">{totalItems}</span> matching products
-        </p>
-        {filters.brands.length > 0 || filters.colors.length > 0 || searchQuery !== '' ? (
-          <span className="text-accent-mint animate-pulse font-medium">Filters Active</span>
-        ) : null}
+    <div id="product-grid-section" className="flex-1 space-y-6 min-w-0">
+
+      {/* ── Category Tabs ── */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1 glass-premium rounded-xl p-1 overflow-x-auto">
+          {CATEGORIES.map(cat => (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-all duration-200 ${
+                activeCategory === cat
+                  ? 'bg-gradient-to-r from-accent-teal to-accent-tealDark text-darkBg shadow-glow-subtle'
+                  : 'text-gray-400 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <span>{cat}</span>
+              <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-extrabold ${
+                activeCategory === cat ? 'bg-darkBg/30 text-darkBg' : 'bg-[#1C2438] text-gray-500'
+              }`}>
+                {getCategoryCount(cat)}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {/* Status info */}
+        <div className="hidden sm:flex items-center space-x-2 text-[11px] text-gray-500">
+          <SlidersHorizontal className="h-3 w-3" />
+          <span>
+            <span className="text-white font-bold">{totalItems}</span> results
+            {searchQuery && <span className="text-accent-teal"> · "{searchQuery}"</span>}
+          </span>
+        </div>
       </div>
 
-      {/* Grid of Product Cards */}
+      {/* ── Product Grid ── */}
       {paginatedProducts.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {paginatedProducts.map((product) => (
-            <ProductCard 
-              key={product.id} 
-              product={product} 
-              onConfigure={onConfigureProduct} 
-            />
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+          {paginatedProducts.map((product, idx) => (
+            <div
+              key={product.id}
+              className="animate-fade-in-up"
+              style={{ animationDelay: `${idx * 60}ms`, animationFillMode: 'both' }}
+            >
+              <ProductCard
+                product={product}
+                onConfigure={onConfigureProduct}
+              />
+            </div>
           ))}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center p-12 border border-dashed border-darkBg-border rounded-xl bg-darkBg-card/50 text-center glass min-h-[300px]">
-          <HelpCircle className="h-10 w-10 text-gray-500 mb-3" />
-          <h4 className="text-base font-bold text-white mb-1">No Matching Items</h4>
-          <p className="text-xs text-gray-400 max-w-xs">
-            Adjust your price sliders, colors, or brands in the left sidebar to discover available rentals.
+        <div className="flex flex-col items-center justify-center p-16 rounded-2xl border border-dashed border-[#1C2438] glass min-h-[300px] text-center animate-fade-in">
+          <div className="h-16 w-16 rounded-2xl glass-teal flex items-center justify-center mb-4">
+            <PackageSearch className="h-8 w-8 text-accent-teal" />
+          </div>
+          <h4 className="text-base font-bold text-white mb-2 font-display">No Items Found</h4>
+          <p className="text-sm text-gray-500 max-w-xs">
+            Try adjusting your filters or search query to find available rentals.
           </p>
         </div>
       )}
 
-      {/* Pagination Controls */}
+      {/* ── Pagination ── */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-4 pt-6 border-t border-darkBg-border/50">
+        <div className="flex items-center justify-center gap-3 pt-4 border-t border-[#1C2438]/50">
           <button
-            onClick={handlePrevPage}
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
             disabled={currentPage === 1}
-            className={`p-2 rounded-lg border border-darkBg-border text-gray-400 transition-colors ${
-              currentPage === 1 
-                ? 'opacity-50 cursor-not-allowed' 
-                : 'hover:text-white hover:bg-darkBg-hover hover:border-accent-mint'
+            className={`p-2.5 rounded-xl border transition-all ${
+              currentPage === 1
+                ? 'opacity-40 cursor-not-allowed border-[#1C2438] text-gray-600'
+                : 'border-[#1C2438] text-gray-400 hover:text-white hover:border-accent-teal/40 hover:bg-accent-teal/5'
             }`}
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
-          
-          <span className="text-xs text-gray-300 font-medium">
-            Page <span className="text-white font-bold">{currentPage}</span> of{' '}
-            <span className="text-white font-bold">{totalPages}</span>
-          </span>
+
+          <div className="flex items-center gap-1">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`h-8 w-8 rounded-lg text-xs font-bold transition-all ${
+                  currentPage === page
+                    ? 'bg-accent-teal text-darkBg shadow-glow-subtle'
+                    : 'text-gray-500 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+          </div>
 
           <button
-            onClick={handleNextPage}
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
-            className={`p-2 rounded-lg border border-darkBg-border text-gray-400 transition-colors ${
-              currentPage === totalPages 
-                ? 'opacity-50 cursor-not-allowed' 
-                : 'hover:text-white hover:bg-darkBg-hover hover:border-accent-mint'
+            className={`p-2.5 rounded-xl border transition-all ${
+              currentPage === totalPages
+                ? 'opacity-40 cursor-not-allowed border-[#1C2438] text-gray-600'
+                : 'border-[#1C2438] text-gray-400 hover:text-white hover:border-accent-teal/40 hover:bg-accent-teal/5'
             }`}
           >
             <ChevronRight className="h-4 w-4" />
           </button>
         </div>
       )}
-
     </div>
   );
 }

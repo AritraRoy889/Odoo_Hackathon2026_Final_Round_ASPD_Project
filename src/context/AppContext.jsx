@@ -381,7 +381,7 @@ const INITIAL_INVOICES = [
 
 export const AppProvider = ({ children }) => {
   // Navigation active view routing
-  const [currentView, setCurrentView] = useState('storefront');
+  const [currentView, setCurrentView] = useState('landing');
   
   // Auth account profiles
   const [user, setUser] = useState({
@@ -1049,9 +1049,19 @@ export const AppProvider = ({ children }) => {
     }}>
       {children}
       {notification && (
-        <div className="fixed bottom-6 right-6 z-50 animate-slide-up bg-darkBg-card border-l-4 border-accent-mint px-5 py-4 rounded-r-lg shadow-glow flex items-center space-x-3 text-sm font-semibold max-w-sm glass">
-          <span className="h-2 w-2 rounded-full bg-accent-mint animate-ping animate-pulse-glow"></span>
-          <span>{notification.message}</span>
+        <div className="fixed top-20 right-4 z-[200] animate-slide-in-right">
+          <div className={`flex items-start space-x-3 glass-premium border border-[#1C2438] rounded-xl px-4 py-3 shadow-[0_8px_32px_rgba(0,0,0,0.6)] max-w-xs ${
+            notification.type === 'success' ? 'toast-success' :
+            notification.type === 'error'   ? 'toast-error' :
+            notification.type === 'warning' ? 'toast-warning' : 'toast-info'
+          }`}>
+            <span className="text-base flex-shrink-0">
+              {notification.type === 'success' ? '✅' :
+               notification.type === 'error'   ? '❌' :
+               notification.type === 'warning' ? '⚠️' : 'ℹ️'}
+            </span>
+            <p className="text-xs text-gray-200 font-medium leading-snug">{notification.message}</p>
+          </div>
         </div>
       )}
     </AppContext.Provider>

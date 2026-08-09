@@ -2,10 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { X, CheckCircle2, AlertCircle } from 'lucide-react';
 
-export default function AuthFlow({ isOpen, onClose }) {
-  const { setUser, triggerNotification } = useApp();
-  const [authTab, setAuthTab] = useState('login'); // login, forgot, register-user, register-vendor
-  
+export default function AuthFlow({ isOpen, onClose, initialTab = 'login' }) {
+  const { setUser, triggerNotification, setCurrentView } = useApp();
+  const [authTab, setAuthTab] = useState(initialTab);
+
+  // When the modal opens, jump to the requested tab
+  useEffect(() => {
+    if (isOpen) setAuthTab(initialTab);
+  }, [isOpen, initialTab]);
+
+
   // Form fields
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -72,6 +78,7 @@ export default function AuthFlow({ isOpen, onClose }) {
 
       setUser(mockUser);
       triggerNotification(`Welcome back, ${mockUser.name}!`, 'success');
+      setCurrentView('storefront');
       onClose();
     } else {
       // Custom wireframe mismatch error message (Image 4)
@@ -112,6 +119,7 @@ export default function AuthFlow({ isOpen, onClose }) {
 
     setUser(newUser);
     triggerNotification('Customer Account registered successfully!', 'success');
+    setCurrentView('storefront');
     onClose();
   };
 
@@ -156,6 +164,7 @@ export default function AuthFlow({ isOpen, onClose }) {
 
     setUser(newVendor);
     triggerNotification(`Vendor portal registered for ${companyName}!`, 'success');
+    setCurrentView('storefront');
     onClose();
   };
 
