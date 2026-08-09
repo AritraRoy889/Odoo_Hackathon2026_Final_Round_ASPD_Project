@@ -676,7 +676,7 @@ export default function AuthFlow({ isOpen, onClose, initialTab = 'login' }) {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="neorent435@gmail.com"
+                placeholder="admin@example.com"
                 className="w-full rounded border border-darkBg-border bg-darkBg p-2.5 text-white outline-none focus:border-accent-mint text-[11px]"
                 required
               />
