@@ -168,6 +168,31 @@ export default function AuthFlow({ isOpen, onClose, initialTab = 'login' }) {
     onClose();
   };
 
+  const handleRegisterAdminSubmit = (e) => {
+    e.preventDefault();
+    if (!email || !password) {
+      triggerNotification('Please fill in all fields', 'error');
+      return;
+    }
+
+    if (email.trim().toLowerCase() !== 'neorent435@gmail.com') {
+      triggerNotification('Admin not matched', 'error');
+      return;
+    }
+
+    const adminUser = {
+      id: `admin-${Math.floor(1000 + Math.random() * 9000)}`,
+      name: 'Platform Administrator',
+      email: 'neorent435@gmail.com',
+      role: 'ADMIN'
+    };
+
+    setUser(adminUser);
+    triggerNotification('Admin portal opened successfully!', 'success');
+    setCurrentView('admin');
+    onClose();
+  };
+
   const handleForgotSubmit = (e) => {
     e.preventDefault();
     if (!email) {
@@ -203,8 +228,9 @@ export default function AuthFlow({ isOpen, onClose, initialTab = 'login' }) {
 
         {/* Tab Header Selector */}
         {authTab !== 'forgot' && (
-          <div className="mb-6 flex border-b border-darkBg-border pb-3 justify-start gap-4">
+          <div className="mb-6 flex border-b border-darkBg-border pb-3 justify-start gap-4 flex-wrap">
             <button
+              type="button"
               onClick={() => { setAuthTab('login'); setPassword(''); setConfirmPassword(''); }}
               className={`pb-1 text-sm font-bold uppercase tracking-wider transition-colors ${
                 authTab === 'login' ? 'border-b-2 border-accent-mint text-accent-mint' : 'text-gray-400 hover:text-white'
@@ -213,6 +239,7 @@ export default function AuthFlow({ isOpen, onClose, initialTab = 'login' }) {
               Sign In
             </button>
             <button
+              type="button"
               onClick={() => { setAuthTab('register-user'); setPassword(''); setConfirmPassword(''); }}
               className={`pb-1 text-sm font-bold uppercase tracking-wider transition-colors ${
                 authTab === 'register-user' ? 'border-b-2 border-accent-mint text-accent-mint' : 'text-gray-400 hover:text-white'
@@ -221,12 +248,22 @@ export default function AuthFlow({ isOpen, onClose, initialTab = 'login' }) {
               Register
             </button>
             <button
+              type="button"
               onClick={() => { setAuthTab('register-vendor'); setPassword(''); setConfirmPassword(''); }}
               className={`pb-1 text-sm font-bold uppercase tracking-wider transition-colors ${
                 authTab === 'register-vendor' ? 'border-b-2 border-accent-mint text-accent-mint' : 'text-gray-400 hover:text-white'
               }`}
             >
               Vendor Partner
+            </button>
+            <button
+              type="button"
+              onClick={() => { setAuthTab('register-admin'); setPassword(''); setConfirmPassword(''); }}
+              className={`pb-1 text-sm font-bold uppercase tracking-wider transition-colors ${
+                authTab === 'register-admin' ? 'border-b-2 border-accent-mint text-accent-mint' : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              Admin
             </button>
           </div>
         )}
@@ -619,6 +656,52 @@ export default function AuthFlow({ isOpen, onClose, initialTab = 'login' }) {
               Register
             </button>
 
+          </form>
+        )}
+
+        {/* --- 5. ADMIN SIGN-UP PAGE --- */}
+        {authTab === 'register-admin' && (
+          <form onSubmit={handleRegisterAdminSubmit} className="space-y-4 text-xs text-gray-300">
+            <div className="text-center">
+              <h3 className="text-lg font-bold text-white uppercase tracking-wider">Admin Sign-Up</h3>
+              <p className="text-[10px] text-gray-500 mt-1">
+                Enter your administrative credentials to open the back-office management console.
+              </p>
+            </div>
+
+            {/* Email Field */}
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-gray-400 uppercase">Email ID</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="neorent435@gmail.com"
+                className="w-full rounded border border-darkBg-border bg-darkBg p-2.5 text-white outline-none focus:border-accent-mint text-[11px]"
+                required
+              />
+            </div>
+
+            {/* Password Field */}
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-gray-400 uppercase">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full rounded border border-darkBg-border bg-darkBg p-2.5 text-white outline-none focus:border-accent-mint text-[11px]"
+                required
+              />
+            </div>
+
+            {/* Sign-Up Button */}
+            <button
+              type="submit"
+              className="w-full text-center py-2.5 rounded bg-purple-600 hover:bg-purple-500 text-white font-extrabold tracking-wider uppercase text-xs transition-colors shadow-glow cursor-pointer"
+            >
+              Sign-Up
+            </button>
           </form>
         )}
 
