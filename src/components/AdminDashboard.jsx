@@ -2415,7 +2415,17 @@ export default function AdminDashboard() {
                       doc.text(o.orderId||'—',20,y); doc.text((o.customerName||'').slice(0,22),60,y);
                       doc.text(o.kanbanCategory||'—',130,y); doc.text(`$${Number(o.total||0).toFixed(0)}`,170,y);
                     });
-                    doc.save('NeoRent_Executive_Report.pdf');
+                    // Create explicit PDF Blob & download link to guarantee .pdf file extension
+                    const pdfBlob = doc.output('blob');
+                    const blobUrl = URL.createObjectURL(pdfBlob);
+                    const link = document.createElement('a');
+                    link.href = blobUrl;
+                    link.download = 'NeoRent_Executive_Report.pdf';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
+
                     triggerNotification('📄 Executive PDF downloaded!','success');
                   } catch(e){ triggerNotification('PDF generation failed','error'); }
                 }}
