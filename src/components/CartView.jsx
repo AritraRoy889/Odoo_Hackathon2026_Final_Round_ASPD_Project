@@ -5,6 +5,7 @@ import { ShoppingBag, Plus, Minus, CreditCard, Sparkles, X } from 'lucide-react'
 export default function CartView() {
   const {
     cart,
+    user,
     updateCartQty,
     removeFromCart,
     couponCode,
@@ -21,6 +22,8 @@ export default function CartView() {
     finalizeOrder,
     triggerNotification
   } = useApp();
+
+  const isStaff = user && (user.role === 'ADMIN' || user.role === 'VENDOR');
 
   // Express Checkout Popup State (pre-populated for 1-click payment)
   const [expressOpen, setExpressOpen] = useState(false);
@@ -82,20 +85,30 @@ export default function CartView() {
 
   if (cart.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 border border-darkBg-border rounded-xl bg-darkBg-card/50 text-center glass min-h-[400px] animate-fade-in text-gray-400 text-xs">
-        <div className="h-16 w-16 bg-darkBg-hover rounded-full flex items-center justify-center border border-darkBg-border mb-4">
-          <ShoppingBag className="h-8 w-8 text-gray-500" />
+      <div className="flex flex-col items-center justify-center p-12 border border-darkBg-border rounded-2xl bg-darkBg-card/50 text-center glass min-h-[420px] animate-fade-in text-gray-400 text-xs">
+        <div className="h-16 w-16 bg-darkBg-hover rounded-2xl flex items-center justify-center border border-darkBg-border/60 mb-4 shadow-glow-subtle">
+          <ShoppingBag className="h-8 w-8 text-accent-teal" />
         </div>
-        <h3 className="text-xl font-bold text-white mb-2">Your Cart is Staging Empty</h3>
-        <p className="text-xs mb-6">
-          Browse our high-ticket catalog and reserve your premium options.
+        <h3 className="text-xl font-bold text-white mb-2 font-display">Your Cart is Currently Empty</h3>
+        <p className="text-xs text-gray-400 mb-6 max-w-md">
+          No staged items in your cart. Add products from the catalog to build a new quotation or order.
         </p>
-        <button
-          onClick={() => setCurrentView('storefront')}
-          className="rounded bg-accent-mint px-6 py-2.5 font-bold text-darkBg hover:bg-accent-mintLight transition-colors shadow-glow-subtle"
-        >
-          Explore Catalog
-        </button>
+        <div className="flex flex-wrap justify-center gap-3">
+          <button
+            onClick={() => setCurrentView('storefront')}
+            className="rounded-xl bg-accent-teal px-6 py-2.5 font-extrabold text-darkBg hover:bg-accent-tealLight transition-all shadow-glow-subtle uppercase tracking-wider text-xs cursor-pointer"
+          >
+            Explore Catalog
+          </button>
+          {isStaff && (
+            <button
+              onClick={() => setCurrentView('admin')}
+              className="rounded-xl border border-darkBg-border bg-darkBg px-6 py-2.5 font-bold text-gray-300 hover:text-white hover:border-gray-500 transition-all uppercase tracking-wider text-xs cursor-pointer"
+            >
+              Back to Admin Panel
+            </button>
+          )}
+        </div>
       </div>
     );
   }

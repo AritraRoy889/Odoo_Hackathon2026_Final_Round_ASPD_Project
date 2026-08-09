@@ -247,6 +247,7 @@ export default function AdminDashboard() {
         <div className="flex flex-wrap gap-1 md:gap-1.5">
           {[
             { id: 'Order',       label: 'Orders',   icon: ClipboardList },
+            { id: 'Cart',        label: 'Cart',     icon: ShoppingBag },
             { id: 'Schedule',    label: 'Schedule', icon: Calendar },
             { id: 'Product',     label: 'Products', icon: Package },
             { id: 'Report',      label: 'Reports',  icon: BarChart2 },
@@ -256,7 +257,13 @@ export default function AdminDashboard() {
           ].map(({ id, label, icon: Icon }) => (
             <button
               key={id}
-              onClick={() => handleTabChange(id)}
+              onClick={() => {
+                if (id === 'Cart') {
+                  setCurrentView('cart');
+                } else {
+                  setActiveTab(id);
+                }
+              }}
               className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-[11px] font-extrabold uppercase tracking-wider transition-all duration-200 border ${
                 activeTab === id
                   ? 'bg-gradient-to-r from-accent-teal to-accent-tealDark text-darkBg border-accent-teal shadow-glow-subtle'
@@ -386,8 +393,11 @@ export default function AdminDashboard() {
                   <span className="text-sm font-bold text-white">Rental Order</span>
                   
                   <button
-                    onClick={() => triggerNotification('Add order clicked. Stage it on Storefront!', 'info')}
-                    className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-accent-mint text-darkBg text-xs font-extrabold shadow-glow-subtle hover:brightness-105"
+                    onClick={() => {
+                      setCurrentView('storefront');
+                      triggerNotification('Select items from the catalog to build a new order.', 'info');
+                    }}
+                    className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-accent-mint text-darkBg text-xs font-extrabold shadow-glow-subtle hover:brightness-105 cursor-pointer"
                   >
                     <Plus className="h-3.5 w-3.5" />
                     <span>New</span>
